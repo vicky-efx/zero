@@ -1,0 +1,31 @@
+<div class="page-container">
+    <div class="chat-container">
+        <!-- Header -->
+        <div class="header">
+            <span class="back-arrow" (click)="goBack()">←</span>
+            <span class="user-name">{{ userName }}</span>
+        </div>
+
+        <!-- Messages area -->
+        <div class="messages" #messageList>
+            <div *ngFor="let msg of messages"
+                [ngClass]="{'message': true, 'me': msg.from === currentUserId, 'them': msg.from !== currentUserId}">
+                <div class="bubble">
+                    <img *ngIf="msg.image" [src]="msg.image" class="chat-image" />
+                    <div *ngIf="msg.content">{{ msg.content }}</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Input area -->
+        <div class="input-area">
+            <input type="text" placeholder="Type a message..." [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" />
+
+            <button type="button" class="plus-btn" (click)="fileInput.click()">+</button>
+            <input type="file" #fileInput accept="image/*" (change)="sendImage($event)" style="display: none;" />
+
+            <button (click)="sendMessage()">Send</button>
+        </div>
+    </div>
+</div>

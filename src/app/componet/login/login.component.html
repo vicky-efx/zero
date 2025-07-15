@@ -1,0 +1,34 @@
+<div class="page-container">
+  <div class="login-box">
+    <h2>Welcome Back</h2>
+    <p>Please login to your account</p>
+
+
+
+    <form #loginForm="ngForm" (ngSubmit)="onLogin()" novalidate>
+      <input type="email" placeholder="Email" [(ngModel)]="email" name="email" #emailRef="ngModel" required email />
+      <div *ngIf="emailRef.invalid && emailRef.touched" class="field-error">
+        <div *ngIf="emailRef.errors?.['required']">Email is required.</div>
+        <div *ngIf="emailRef.errors?.['email']">Please enter a valid email.</div>
+      </div>
+
+      <input type="password" placeholder="Password" [(ngModel)]="password" name="password" #passRef="ngModel" required
+        minlength="4" />
+      <div *ngIf="passRef.invalid && passRef.touched" class="field-error">
+        <div *ngIf="passRef.errors?.['required']">Password is required.</div>
+        <div *ngIf="passRef.errors?.['minlength']">Password must be at least 4 characters.</div>
+      </div>
+
+      <button type="submit" [disabled]="loginForm.invalid">Login</button>
+    </form>
+
+    <!-- ✅ Global error popup -->
+    <div *ngIf="errorMessage" class="error-popup">
+      {{ errorMessage }}
+    </div>
+
+    <div class="footer-text">
+      Don't have an account? <p [routerLink]="['/signup']">Sign up</p>
+    </div>
+  </div>
+</div>

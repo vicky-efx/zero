@@ -1,0 +1,42 @@
+<div class="page-container">
+  <div class="header">
+    <img src="zerochat_logo.png" />
+    <div class="profile" (click)="goToProfile()">
+      <img *ngIf="user?.image; else defaultAvatar" [src]="user.image" alt="Profile" />
+      <ng-template #defaultAvatar>
+        <img src="https://i.pravatar.cc/40" alt="Profile" />
+      </ng-template>
+    </div>
+  </div>
+
+
+  <div *ngIf="otherUsers.length > 0; else noUsers">
+    <div *ngFor="let u of otherUsers" class="chat-item" (click)="openChat(u.id)">
+      <div class="chat-avatar">
+        <img [src]="u.image ? u.image : 'https://i.pravatar.cc/40?u=' + u.id" alt="Avatar"
+          (click)="openUserModal(u, $event)" />
+      </div>
+      <div class="chat-details">
+        <div class="chat-name">{{ u.name }}</div>
+        <div class="chat-last">{{ u.email }}</div>
+      </div>
+      <div class="chat-time">12:00 PM</div>
+    </div>
+  </div>
+  <ng-template #noUsers>
+    <p>No users found.</p>
+  </ng-template>
+
+
+  <ng-template #noUsers>
+    <p>No other users found.</p>
+  </ng-template>
+
+  <!-- Modal -->
+  <div class="modal-overlay" *ngIf="showProfileModal" (click)="closeProfileModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <img [src]="selectedUserImage" alt="User Profile" />
+    </div>
+  </div>
+
+</div>

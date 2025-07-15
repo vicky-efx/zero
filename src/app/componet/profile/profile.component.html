@@ -1,0 +1,29 @@
+<div class="page-container" *ngIf="user">
+  <div class="back-arrow" (click)="goBack()">←</div>
+
+  <div class="profile-header">
+    <!-- Clickable image -->
+    <label class="image-label">
+      <img [src]="user.image ? user.image : 'https://i.pravatar.cc/120?u=' + user.id" alt="Profile" />
+      <input type="file" (change)="onFileSelected($event)" hidden />
+    </label>
+    <h2>{{ user.name }}</h2>
+  </div>
+
+  <div class="profile-content">
+    <div class="section">
+      <h3>About</h3>
+      <p>Passionate developer, loves building creative apps and solving problems.</p>
+    </div>
+
+    <div class="section">
+      <h3>Contact</h3>
+      <p><strong>Email:</strong> {{ user.email }}</p>
+      <p><strong>Phone:</strong> {{ user.phoneNumber }}</p>
+      <p><strong>Age:</strong> {{ user.age }}</p>
+    </div>
+
+    <!-- Logout button -->
+    <button class="logout-btn" (click)="logout()">Logout</button>
+  </div>
+</div>

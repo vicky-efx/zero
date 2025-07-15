@@ -1,0 +1,45 @@
+<div class="page-container">
+    <div class="login-box">
+        <h2>Create Account</h2>
+        <p>Please sign up to continue</p>
+
+        <form #signupForm="ngForm" (ngSubmit)="onSignUp()" novalidate>
+            <input type="text" placeholder="Name" [(ngModel)]="name" name="name" #nameRef="ngModel" required />
+            <div *ngIf="nameRef.invalid && nameRef.touched" class="field-error">
+                Name is required.
+            </div>
+
+            <input type="email" placeholder="Email" [(ngModel)]="email" name="email" #emailRef="ngModel" required
+                email />
+            <div *ngIf="emailRef.invalid && emailRef.touched" class="field-error">
+                <div *ngIf="emailRef.errors?.['required']">Email is required.</div>
+                <div *ngIf="emailRef.errors?.['email']">Enter a valid email.</div>
+            </div>
+
+            <input type="text" placeholder="Phone Number" [(ngModel)]="phoneNumber" name="phoneNumber"
+                #phoneRef="ngModel" required pattern="^[0-9]{10}$" />
+            <div *ngIf="phoneRef.invalid && phoneRef.touched" class="field-error">
+                <div *ngIf="phoneRef.errors?.['required']">Phone number is required.</div>
+                <div *ngIf="phoneRef.errors?.['pattern']">Enter a valid 10-digit phone number.</div>
+            </div>
+
+            <input type="password" placeholder="Password" [(ngModel)]="password" name="password" #passRef="ngModel"
+                required minlength="6" />
+            <div *ngIf="passRef.invalid && passRef.touched" class="field-error">
+                <div *ngIf="passRef.errors?.['required']">Password is required.</div>
+                <div *ngIf="passRef.errors?.['minlength']">Password must be at least 6 characters.</div>
+            </div>
+
+            <button type="submit" [disabled]="signupForm.invalid">Sign Up</button>
+        </form>
+
+        <!-- Form-level error -->
+        <div *ngIf="errorMessage" class="error-popup">
+            {{ errorMessage }}
+        </div>
+
+        <div class="footer-text">
+            Already have an account? <p [routerLink]="['/login']">Login</p>
+        </div>
+    </div>
+</div>
