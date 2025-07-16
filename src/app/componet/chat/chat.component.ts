@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { UserService } from '../../services/user.service';
@@ -25,6 +25,8 @@ export class ChatComponent {
   isCleared = false;
   chatId = '';
   showEmojiPicker = false;
+  emojiPickerRef!: ElementRef;
+  menuRef!: ElementRef;
 
   constructor(
     private route: ActivatedRoute,
@@ -34,6 +36,8 @@ export class ChatComponent {
   ) { }
 
   @ViewChild('messageList') messageList!: ElementRef;
+  @ViewChild('emojiPickerContainer') emojiPickerContainer!: ElementRef;
+  @ViewChild('menuContainer') menuContainer!: ElementRef;
 
   ngOnInit(): void {
     this.currentUserId = sessionStorage.getItem('userId') || '';
@@ -164,6 +168,25 @@ export class ChatComponent {
 
   addEmoji(event: any) {
     this.newMessage += event.emoji.native;
+  }
+
+  toggleEmojiPicker(event: MouseEvent) {
+    event.stopPropagation(); // 👈 important!
+    this.showEmojiPicker = !this.showEmojiPicker;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: MouseEvent) {
+    const clickedInsideMenu = this.menuContainer?.nativeElement.contains(event.target);
+    const clickedInsideEmoji = this.emojiPickerContainer?.nativeElement.contains(event.target);
+
+    if (!clickedInsideMenu && this.menuOpen) {
+      this.menuOpen = false;
+    }
+
+    if (!clickedInsideEmoji && this.showEmojiPicker) {
+      this.showEmojiPicker = false;
+    }
   }
 
 }

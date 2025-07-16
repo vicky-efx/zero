@@ -9,7 +9,7 @@
                 </span>
             </div>
 
-            <div class="menu-container">
+            <div class="menu-container" #menuContainer>
                 <button class="menu-button" (click)="toggleMenu()">⋮</button>
                 <div class="dropdown-menu" *ngIf="menuOpen">
                     <div class="menu-item" *ngIf="!isCleared" (click)="clearChat()">Clear Chat</div>
@@ -42,13 +42,13 @@
             <button type="button" class="plus-btn" (click)="fileInput.click()">+</button>
             <input type="file" #fileInput accept="image/*" (change)="sendImage($event)" style="display: none;" />
 
-            <button type="button" class="emoji-btn" (click)="showEmojiPicker = !showEmojiPicker">😊</button>
+            <button type="button" class="emoji-btn" (click)="toggleEmojiPicker($event)">😊</button>
 
             <button (click)="sendMessage()">Send</button>
         </div>
 
         <!-- Emoji picker outside input area so it doesn't break layout -->
-        <div class="emoji-picker-container" *ngIf="showEmojiPicker">
+        <div class="emoji-picker-container" #emojiPickerContainer *ngIf="showEmojiPicker">
             <emoji-mart (emojiSelect)="addEmoji($event)"></emoji-mart>
         </div>
 
