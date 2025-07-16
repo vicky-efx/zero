@@ -5,10 +5,11 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { ChatService } from '../../services/chat.service';
 import { Subscription } from 'rxjs';
+import { PickerModule } from '@ctrl/ngx-emoji-mart';
 
 @Component({
   selector: 'app-chat',
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, PickerModule],
   templateUrl: './chat.component.html',
   styleUrl: './chat.component.scss'
 })
@@ -20,6 +21,10 @@ export class ChatComponent {
   selectedUserId = '';
   userName: string = '';
   menuOpen = false;
+  isBlocked = false;
+  isCleared = false;
+  chatId = '';
+  showEmojiPicker = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -30,18 +35,29 @@ export class ChatComponent {
 
   @ViewChild('messageList') messageList!: ElementRef;
 
-  ngAfterViewInit() {
-    this.scrollToBottom();
-  }
-
   ngOnInit(): void {
     this.currentUserId = sessionStorage.getItem('userId') || '';
     this.selectedUserId = this.route.snapshot.paramMap.get('id') || '';
+    this.chatId = this.chatService.generateChatId(this.currentUserId, this.selectedUserId);
 
     this.userService.getUserById(this.selectedUserId).subscribe(user => {
       this.userName = user?.name || 'Unknown';
     });
 
+    this.checkIfBlocked();
+
+    this.chatService.isChatCleared(this.currentUserId, this.chatId).then(cleared => {
+      this.isCleared = cleared;
+
+      if (!cleared) {
+        this.loadMessages();
+      } else {
+        this.messages = [];
+      }
+    });
+  }
+
+  loadMessages() {
     this.subscription = this.chatService
       .getMessages(this.currentUserId, this.selectedUserId)
       .subscribe(msgs => {
@@ -50,17 +66,20 @@ export class ChatComponent {
       });
   }
 
-  scrollToBottom() {
-    try {
-      this.messageList.nativeElement.scrollTop = this.messageList.nativeElement.scrollHeight;
-    } catch (err) {
-      console.log(err);
-    }
-  }
   ngOnDestroy(): void {
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
+  }
+
+  scrollToBottom() {
+    setTimeout(() => {
+      try {
+        this.messageList.nativeElement.scrollTop = this.messageList.nativeElement.scrollHeight;
+      } catch (err) {
+        console.log(err);
+      }
+    }, 100);
   }
 
   sendMessage(): void {
@@ -71,9 +90,12 @@ export class ChatComponent {
       .sendMessage(this.currentUserId, this.selectedUserId, trimmed)
       .then(() => {
         this.newMessage = '';
+      })
+      .catch(err => {
+        console.error(err);
+        alert(err);
       });
   }
-
 
   sendImage(event: any) {
     const file: File = event.target.files[0];
@@ -84,46 +106,64 @@ export class ChatComponent {
 
         this.chatService
           .sendMessage(this.currentUserId, this.selectedUserId, undefined, base64String)
-          .then(() => {
+          .then(() => { })
+          .catch(err => {
+            console.error(err);
+            alert(err);
           });
       };
       reader.readAsDataURL(file);
     }
   }
 
-
-
+  toggleMenu() {
+    this.menuOpen = !this.menuOpen;
+  }
 
   goBack(): void {
     this.router.navigate(['/user-list']);
   }
 
-  toggleMenu() {
-    this.menuOpen = !this.menuOpen;
-  }
-
   clearChat() {
-    this.messages = [];
-    this.menuOpen = false;
+    this.chatService.clearChat(this.currentUserId, this.chatId).then(() => {
+      this.isCleared = true;
+      this.messages = [];
+      this.menuOpen = false;
+    });
   }
 
-  deleteChat() {
-    this.chatService.deleteChat(this.currentUserId, this.selectedUserId).then(() => {
-      this.messages = [];
-      console.log('Chat deleted from Firestore');
+  restoreChat() {
+    this.chatService.restoreChat(this.currentUserId, this.chatId).then(() => {
+      this.isCleared = false;
+      this.loadMessages();
       this.menuOpen = false;
-    }).catch(err => {
-      console.error('Error deleting chat:', err);
     });
   }
 
   blockUser() {
-    this.chatService.blockUser(this.currentUserId, this.selectedUserId).then(() => {
-      console.log('User blocked successfully');
-      this.menuOpen = false;
-    }).catch(err => {
-      console.error('Error blocking user:', err);
+    if (this.isBlocked) {
+      this.chatService.unblockUser(this.currentUserId, this.selectedUserId).then(() => {
+        this.isBlocked = false;
+        console.log('User unblocked');
+        this.menuOpen = false;
+      });
+    } else {
+      this.chatService.blockUser(this.currentUserId, this.selectedUserId).then(() => {
+        this.isBlocked = true;
+        console.log('User blocked');
+        this.menuOpen = false;
+      });
+    }
+  }
+
+  checkIfBlocked() {
+    this.chatService.isUserBlocked(this.currentUserId, this.selectedUserId).then(isBlocked => {
+      this.isBlocked = isBlocked;
     });
+  }
+
+  addEmoji(event: any) {
+    this.newMessage += event.emoji.native;
   }
 
 }

@@ -1,142 +1,237 @@
+.page-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+}
+
 .chat-container {
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    background: #f5f5f5;
+    height: 90vh;
+    width: 100%;
+    max-width: 500px;
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    position: relative; // important for absolute emoji picker
+}
 
-    .header {
+.love-header {
+    background: linear-gradient(45deg, #ff9a9e, #fad0c4);
+    color: #b30059; // romantic dark rose text color
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+
+    .header-left {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        padding: 10px;
     }
 
-    .menu-container {
-        position: relative;
+    .back-arrow {
+        font-size: 20px;
+        cursor: pointer;
+        margin-right: 10px;
+        color: #b30059;
+        transition: transform 0.2s;
+
+        &:hover {
+            transform: scale(1.2);
+        }
+    }
+
+    .user-name {
+        font-weight: bold;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+
+        .heart-icon {
+            color: #ff4d88;
+            margin-right: 5px;
+            font-size: 18px;
+            animation: pulse 1.5s infinite;
+        }
     }
 
     .menu-button {
         background: transparent;
         border: none;
         font-size: 20px;
+        color: #b30059;
         cursor: pointer;
     }
 
     .dropdown-menu {
         position: absolute;
-        right: 0;
-        top: 25px;
-        background-color: white;
-        border: 1px solid #ddd;
+        right: 10px;
+        top: 50px;
+        background-color: #fff0f5;
+        border: 1px solid #f8c2d3;
         border-radius: 4px;
         z-index: 100;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
     }
 
     .menu-item {
-        padding: 8px 15px;
+        padding: 10px 15px;
         cursor: pointer;
+        transition: background 0.3s;
+        color: #b30059;
+
+        &:hover {
+            background-color: #ffe6f0;
+        }
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
     }
 
-    .menu-item:hover {
-        background-color: #f2f2f2;
+    50% {
+        transform: scale(1.3);
     }
 
+    100% {
+        transform: scale(1);
+    }
+}
 
-    .messages {
-        flex: 1;
-        overflow-y: auto;
-        padding: 10px;
+.messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
 
-        .message {
-            display: flex;
-            margin-bottom: 8px;
+    .message {
+        display: flex;
+        margin-bottom: 8px;
 
-            &.me {
-                justify-content: flex-end;
-
-                .bubble {
-                    background: #dcf8c6;
-                    align-items: flex-end;
-                }
-            }
-
-            &.them {
-                justify-content: flex-start;
-
-                .bubble {
-                    background: #ffffff;
-                    align-items: flex-start;
-                }
-            }
+        &.me {
+            justify-content: flex-end;
 
             .bubble {
-                max-width: 75%;
-                padding: 8px 12px;
-                border-radius: 20px;
-                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-                word-break: break-word;
-                display: flex;
-                flex-direction: column;
+                background: #ffe6f0;
+                color: #b30059; // your messages romantic rose
+            }
+        }
 
-                .chat-image {
-                    max-width: 200px;
-                    max-height: 200px;
-                    border-radius: 10px;
-                    margin-bottom: 5px;
-                    object-fit: cover;
-                }
+        &.them {
+            justify-content: flex-start;
+
+            .bubble {
+                background: #fff0f5;
+                color: #800040; // opponent deep plum
+            }
+        }
+
+        .bubble {
+            max-width: 75%;
+            padding: 8px 12px;
+            border-radius: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+            word-break: break-word;
+            display: flex;
+            flex-direction: column;
+
+            .chat-image {
+                max-width: 200px;
+                max-height: 200px;
+                border-radius: 10px;
+                margin-bottom: 5px;
+                object-fit: cover;
             }
         }
     }
+}
 
-    .input-area {
-        display: flex;
-        padding: 10px;
-        border-top: 1px solid #ddd;
-        background: #fff;
+.input-area {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+    background: #fff;
 
-        input[type="text"] {
-            flex: 1;
-            padding: 8px 14px;
-            border-radius: 20px;
-            border: 1px solid #ccc;
-            margin-right: 8px;
-            outline: none;
-            font-size: 14px;
-        }
+    input[type="text"] {
+        flex: 1;
+        padding: 8px 14px;
+        border-radius: 20px;
+        border: 1px solid #ccc;
+        margin-right: 8px;
+        outline: none;
+        font-size: 14px;
+    }
 
-        .plus-btn {
-            width: 40px;
-            height: 40px;
-            padding: 0;
-            border: none;
-            background: #28a745;
-            color: white;
-            font-size: 22px;
-            border-radius: 50%;
-            margin-right: 5px;
-            cursor: pointer;
-            transition: background 0.3s ease;
+    .plus-btn {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border: none;
+        background: #ff69b4;
+        color: white;
+        font-size: 22px;
+        border-radius: 50%;
+        margin-right: 5px;
+        cursor: pointer;
+        transition: background 0.3s ease;
 
-            &:hover {
-                background: #218838;
-            }
-        }
-
-        button {
-            padding: 8px 16px;
-            border: none;
-            background: #007bff;
-            color: white;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.3s ease;
-
-            &:hover {
-                background: #0069d9;
-            }
+        &:hover {
+            background: #ff1493;
         }
     }
+
+    button {
+        padding: 8px 16px;
+        border: none;
+        background: #ff69b4;
+        color: white;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.3s ease;
+
+        &:hover {
+            background: #ff1493;
+        }
+    }
+
+    .emoji-btn {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border: none;
+        background: #ff99cc;
+        color: white;
+        font-size: 22px;
+        border-radius: 50%;
+        margin-right: 5px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+
+        &:hover {
+            background: #ff66b2;
+        }
+    }
+}
+
+// Emoji picker container
+.emoji-picker-container {
+    position: absolute;
+    bottom: 80px; // adjust if needed
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    background: white;
+    max-height: 250px;
+    /* 🎉 Limit height to make it scrollable */
+    overflow-y: auto;
+    width: 300px; // or your preferred width
 }

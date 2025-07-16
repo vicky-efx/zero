@@ -1,20 +1,28 @@
 <div class="page-container">
     <div class="chat-container">
         <!-- Header -->
-        <div class="header">
-            <span class="back-arrow" (click)="goBack()">←</span>
-            <span class="user-name">{{ userName }}</span>
+        <div class="header love-header">
+            <div class="header-left">
+                <span class="back-arrow" (click)="goBack()">←</span>
+                <span class="user-name">
+                    <i class="fa fa-heart heart-icon"></i> {{ userName }}
+                </span>
+            </div>
 
-            <!-- Three-dot menu button -->
             <div class="menu-container">
                 <button class="menu-button" (click)="toggleMenu()">⋮</button>
                 <div class="dropdown-menu" *ngIf="menuOpen">
-                    <!-- <div class="menu-item" (click)="clearChat()">Clear Chat</div> -->
-                    <div class="menu-item" (click)="deleteChat()">Clear Chat</div>
-                    <div class="menu-item" (click)="blockUser()">Block User</div>
+                    <div class="menu-item" *ngIf="!isCleared" (click)="clearChat()">Clear Chat</div>
+                    <div class="menu-item" *ngIf="isCleared" (click)="restoreChat()">Restore Chat</div>
+                    <div class="menu-item" (click)="blockUser()">
+                        {{ isBlocked ? 'Unblock' : 'Block' }}
+                    </div>
                 </div>
             </div>
+
         </div>
+
+
 
         <!-- Messages area -->
         <div class="messages" #messageList>
@@ -34,7 +42,16 @@
             <button type="button" class="plus-btn" (click)="fileInput.click()">+</button>
             <input type="file" #fileInput accept="image/*" (change)="sendImage($event)" style="display: none;" />
 
+            <button type="button" class="emoji-btn" (click)="showEmojiPicker = !showEmojiPicker">😊</button>
+
             <button (click)="sendMessage()">Send</button>
         </div>
+
+        <!-- Emoji picker outside input area so it doesn't break layout -->
+        <div class="emoji-picker-container" *ngIf="showEmojiPicker">
+            <emoji-mart (emojiSelect)="addEmoji($event)"></emoji-mart>
+        </div>
+
+
     </div>
 </div>

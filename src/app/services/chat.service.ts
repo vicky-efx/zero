@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, addDoc, query, where, orderBy, getDocs, serverTimestamp, collectionData, writeBatch } from '@angular/fire/firestore';
-import { from, Observable } from 'rxjs';
+import { Firestore, collection, addDoc, query, where, orderBy, getDocs, serverTimestamp, collectionData, writeBatch, doc } from '@angular/fire/firestore';
+import { from, map, Observable, of, switchMap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -13,50 +13,78 @@ export class ChatService {
   }
 
   sendMessage(fromId: string, toId: string, content?: string, image?: string): Promise<any> {
-    const chatId = this.generateChatId(fromId, toId);
-    const messagesRef = collection(this.firestore, `chats/${chatId}/messages`);
+    // Check if recipient blocked sender
+    const blockedRef = collection(this.firestore, 'blockedUsers');
+    const blockQuery = query(blockedRef, where('blockedUserId', '==', fromId), where('userId', '==', toId));
 
-    const msgData: any = {
-      from: fromId,
-      to: toId,
-      timestamp: serverTimestamp(),
-    };
+    return getDocs(blockQuery).then(snapshot => {
+      if (!snapshot.empty) {
+        return Promise.reject('You are blocked by this user.');
+      }
 
-    if (content) {
-      msgData.content = content;
-    }
+      const chatId = this.generateChatId(fromId, toId);
+      const messagesRef = collection(this.firestore, `chats/${chatId}/messages`);
 
-    if (image) {
-      msgData.image = image;
-    }
+      const msgData: any = {
+        from: fromId,
+        to: toId,
+        timestamp: serverTimestamp(),
+      };
 
-    return addDoc(messagesRef, msgData);
+      if (content) msgData.content = content;
+      if (image) msgData.image = image;
+
+      return addDoc(messagesRef, msgData);
+    });
   }
-
 
   getMessages(fromId: string, toId: string): Observable<any[]> {
     const chatId = this.generateChatId(fromId, toId);
-    const messagesRef = collection(this.firestore, `chats/${chatId}/messages`);
-    const q = query(messagesRef, orderBy('timestamp', 'asc'));
 
-    return collectionData(q, { idField: 'id' }); // live updates automatically
+    const clearedRef = collection(this.firestore, 'clearedChats');
+    const clearedQuery = query(clearedRef, where('userId', '==', fromId), where('chatId', '==', chatId));
+
+    return from(getDocs(clearedQuery)).pipe(
+      switchMap(snapshot => {
+        if (!snapshot.empty) {
+          // Chat was cleared → return empty
+          return of([]);
+        }
+
+        const messagesRef = collection(this.firestore, `chats/${chatId}/messages`);
+        const q = query(messagesRef, orderBy('timestamp', 'asc'));
+        return collectionData(q, { idField: 'id' });
+      })
+    );
   }
 
-  // In ChatService
+  clearChat(userId: string, chatId: string): Promise<void> {
+    const clearedRef = collection(this.firestore, 'clearedChats');
+    return addDoc(clearedRef, {
+      userId,
+      chatId,
+      timestamp: new Date(),
+    }).then(() => { });
+  }
 
-  deleteChat(fromId: string, toId: string): Promise<void> {
-    const chatId = this.generateChatId(fromId, toId);
-    const messagesRef = collection(this.firestore, `chats/${chatId}/messages`);
+  restoreChat(userId: string, chatId: string): Promise<void> {
+    const clearedRef = collection(this.firestore, 'clearedChats');
+    const q = query(clearedRef, where('userId', '==', userId), where('chatId', '==', chatId));
 
-    return getDocs(messagesRef).then(snapshot => {
-      const batch = writeBatch(this.firestore); // ✅ FIX: use writeBatch function
-
-      snapshot.forEach(doc => {
-        batch.delete(doc.ref);
+    return getDocs(q).then(snapshot => {
+      const batch = writeBatch(this.firestore);
+      snapshot.forEach(docSnap => {
+        batch.delete(doc(this.firestore, 'clearedChats', docSnap.id));
       });
-
       return batch.commit();
     });
+  }
+
+  isChatCleared(userId: string, chatId: string): Promise<boolean> {
+    const clearedRef = collection(this.firestore, 'clearedChats');
+    const q = query(clearedRef, where('userId', '==', userId), where('chatId', '==', chatId));
+
+    return getDocs(q).then(snapshot => !snapshot.empty);
   }
 
   blockUser(currentUserId: string, otherUserId: string): Promise<void> {
@@ -68,4 +96,23 @@ export class ChatService {
     }).then(() => { });
   }
 
+  unblockUser(currentUserId: string, otherUserId: string): Promise<void> {
+    const blockedRef = collection(this.firestore, 'blockedUsers');
+    const q = query(blockedRef, where('userId', '==', currentUserId), where('blockedUserId', '==', otherUserId));
+
+    return getDocs(q).then(snapshot => {
+      const batch = writeBatch(this.firestore);
+      snapshot.forEach(docSnap => {
+        batch.delete(doc(this.firestore, 'blockedUsers', docSnap.id));
+      });
+      return batch.commit();
+    });
+  }
+
+  isUserBlocked(currentUserId: string, otherUserId: string): Promise<boolean> {
+    const blockedRef = collection(this.firestore, 'blockedUsers');
+    const q = query(blockedRef, where('userId', '==', currentUserId), where('blockedUserId', '==', otherUserId));
+
+    return getDocs(q).then(snapshot => !snapshot.empty);
+  }
 }
