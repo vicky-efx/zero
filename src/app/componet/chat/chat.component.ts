@@ -19,6 +19,7 @@ export class ChatComponent {
   currentUserId = '';
   selectedUserId = '';
   userName: string = '';
+  menuOpen = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -95,6 +96,34 @@ export class ChatComponent {
 
   goBack(): void {
     this.router.navigate(['/user-list']);
+  }
+
+  toggleMenu() {
+    this.menuOpen = !this.menuOpen;
+  }
+
+  clearChat() {
+    this.messages = [];
+    this.menuOpen = false;
+  }
+
+  deleteChat() {
+    this.chatService.deleteChat(this.currentUserId, this.selectedUserId).then(() => {
+      this.messages = [];
+      console.log('Chat deleted from Firestore');
+      this.menuOpen = false;
+    }).catch(err => {
+      console.error('Error deleting chat:', err);
+    });
+  }
+
+  blockUser() {
+    this.chatService.blockUser(this.currentUserId, this.selectedUserId).then(() => {
+      console.log('User blocked successfully');
+      this.menuOpen = false;
+    }).catch(err => {
+      console.error('Error blocking user:', err);
+    });
   }
 
 }

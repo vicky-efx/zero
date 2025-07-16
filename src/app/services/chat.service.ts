@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, addDoc, query, where, orderBy, getDocs, serverTimestamp, collectionData } from '@angular/fire/firestore';
+import { Firestore, collection, addDoc, query, where, orderBy, getDocs, serverTimestamp, collectionData, writeBatch } from '@angular/fire/firestore';
 import { from, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { Message } from '../models/message.model';
 
 @Injectable({
   providedIn: 'root'
@@ -43,4 +41,31 @@ export class ChatService {
 
     return collectionData(q, { idField: 'id' }); // live updates automatically
   }
+
+  // In ChatService
+
+  deleteChat(fromId: string, toId: string): Promise<void> {
+    const chatId = this.generateChatId(fromId, toId);
+    const messagesRef = collection(this.firestore, `chats/${chatId}/messages`);
+
+    return getDocs(messagesRef).then(snapshot => {
+      const batch = writeBatch(this.firestore); // ✅ FIX: use writeBatch function
+
+      snapshot.forEach(doc => {
+        batch.delete(doc.ref);
+      });
+
+      return batch.commit();
+    });
+  }
+
+  blockUser(currentUserId: string, otherUserId: string): Promise<void> {
+    const blockedRef = collection(this.firestore, 'blockedUsers');
+    return addDoc(blockedRef, {
+      userId: currentUserId,
+      blockedUserId: otherUserId,
+      timestamp: new Date(),
+    }).then(() => { });
+  }
+
 }

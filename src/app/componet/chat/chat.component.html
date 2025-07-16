@@ -4,6 +4,16 @@
         <div class="header">
             <span class="back-arrow" (click)="goBack()">←</span>
             <span class="user-name">{{ userName }}</span>
+
+            <!-- Three-dot menu button -->
+            <div class="menu-container">
+                <button class="menu-button" (click)="toggleMenu()">⋮</button>
+                <div class="dropdown-menu" *ngIf="menuOpen">
+                    <!-- <div class="menu-item" (click)="clearChat()">Clear Chat</div> -->
+                    <div class="menu-item" (click)="deleteChat()">Clear Chat</div>
+                    <div class="menu-item" (click)="blockUser()">Block User</div>
+                </div>
+            </div>
         </div>
 
         <!-- Messages area -->
@@ -15,7 +25,6 @@
                     <div *ngIf="msg.content">{{ msg.content }}</div>
                 </div>
             </div>
-
         </div>
 
         <!-- Input area -->
