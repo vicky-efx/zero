@@ -57,9 +57,18 @@ export class UserService {
   getAllUsersExcludeCurrent(userId: string): Observable<any[]> {
     const usersRef = collection(this.firestore, 'users');
     return collectionData(usersRef, { idField: 'id' }).pipe(
-      map(users => users.filter(user => user.id !== userId))
+      map(users =>
+        users
+          .filter(user => user.id !== userId)
+          .map(user => ({
+            ...user,
+            statusText: user['status'] === 'online' ? 'online' : this.formatLastSeen(user['lastSeen'])
+          }))
+      )
     );
   }
+
+
 
   getUserById(id: string): Observable<any> {
     const userDoc = doc(this.firestore, `users/${id}`);
@@ -74,5 +83,50 @@ export class UserService {
     const userDoc = doc(this.firestore, `users/${id}`);
     return updateDoc(userDoc, { image: imageUrl });
   }
+
+  updateUserStatus(userId: string, status: 'online' | 'offline') {
+    const userDoc = doc(this.firestore, `users/${userId}`);
+    const updateData: any = { status };
+
+    if (status === 'offline') {
+      updateData.lastSeen = Date.now();
+    }
+
+    return updateDoc(userDoc, updateData);
+  }
+
+  private formatLastSeen(lastSeen: number | undefined): string {
+    if (!lastSeen) {
+      return 'Offline';
+    }
+
+    const lastDate = new Date(lastSeen);
+    const now = new Date();
+
+    const diffMs = now.getTime() - lastDate.getTime();
+    const diffMinutes = Math.floor(diffMs / 60000);
+
+    if (diffMinutes < 1) {
+      return 'last seen just now';
+    }
+
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    const lastSeenDay = new Date(lastDate.getFullYear(), lastDate.getMonth(), lastDate.getDate());
+
+    let timeString = lastDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    if (lastSeenDay.getTime() === today.getTime()) {
+      return `last seen today at ${timeString}`;
+    } else if (lastSeenDay.getTime() === yesterday.getTime()) {
+      return `last seen yesterday at ${timeString}`;
+    } else {
+      const dateString = lastDate.toLocaleDateString(undefined, { day: '2-digit', month: 'short' });
+      return `last seen on ${dateString} at ${timeString}`;
+    }
+  }
+
 
 }

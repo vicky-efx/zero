@@ -27,6 +27,7 @@ export class ChatComponent {
   showEmojiPicker = false;
   emojiPickerRef!: ElementRef;
   menuRef!: ElementRef;
+  userStatusText: string = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -46,6 +47,12 @@ export class ChatComponent {
 
     this.userService.getUserById(this.selectedUserId).subscribe(user => {
       this.userName = user?.name || 'Unknown';
+
+      if (user?.status === 'online') {
+        this.userStatusText = 'online';
+      } else {
+        this.userStatusText = this.formatLastSeen(user?.lastSeen);
+      }
     });
 
     this.checkIfBlocked();
@@ -60,6 +67,7 @@ export class ChatComponent {
       }
     });
   }
+
 
   loadMessages() {
     this.subscription = this.chatService
@@ -188,5 +196,32 @@ export class ChatComponent {
       this.showEmojiPicker = false;
     }
   }
+
+  formatLastSeen(lastSeen: number | undefined): string {
+    if (!lastSeen) {
+      return 'last seen a while ago';
+    }
+
+    const lastDate = new Date(lastSeen);
+    const now = new Date();
+
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    const lastSeenDay = new Date(lastDate.getFullYear(), lastDate.getMonth(), lastDate.getDate());
+
+    let timeString = lastDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    if (lastSeenDay.getTime() === today.getTime()) {
+      return `last seen today at ${timeString}`;
+    } else if (lastSeenDay.getTime() === yesterday.getTime()) {
+      return `last seen yesterday at ${timeString}`;
+    } else {
+      const dateString = lastDate.toLocaleDateString(undefined, { day: '2-digit', month: 'short' });
+      return `last seen on ${dateString} at ${timeString}`;
+    }
+  }
+
 
 }

@@ -1,57 +1,59 @@
-<div class="page-container">
-    <div class="chat-container">
-        <!-- Header -->
-        <div class="header love-header">
-            <div class="header-left">
-                <span class="back-arrow" (click)="goBack()">←</span>
-                <span class="user-name">
-                    <i class="fa fa-heart heart-icon"></i> {{ userName }}
-                </span>
-            </div>
-
-            <div class="menu-container" #menuContainer>
-                <button class="menu-button" (click)="toggleMenu()">⋮</button>
-                <div class="dropdown-menu" *ngIf="menuOpen">
-                    <div class="menu-item" *ngIf="!isCleared" (click)="clearChat()">Clear Chat</div>
-                    <div class="menu-item" *ngIf="isCleared" (click)="restoreChat()">Restore Chat</div>
-                    <div class="menu-item" (click)="blockUser()">
-                        {{ isBlocked ? 'Unblock' : 'Block' }}
-                    </div>
-                </div>
-            </div>
+<!-- <div class="page-container"> -->
+<div class="chat-container">
+    <!-- Header -->
+    <div class="header love-header">
+        <div class="header-left">
+            <span class="back-arrow" (click)="goBack()">←</span>
+            <span class="user-name">
+                <i class="fa fa-heart heart-icon"></i> {{ userName }}
+                <div class="user-status-text">{{ userStatusText }}</div>
+            </span>
 
         </div>
 
-
-
-        <!-- Messages area -->
-        <div class="messages" #messageList>
-            <div *ngFor="let msg of messages"
-                [ngClass]="{'message': true, 'me': msg.from === currentUserId, 'them': msg.from !== currentUserId}">
-                <div class="bubble">
-                    <img *ngIf="msg.image" [src]="msg.image" class="chat-image" />
-                    <div *ngIf="msg.content">{{ msg.content }}</div>
+        <div class="menu-container" #menuContainer>
+            <button class="menu-button" (click)="toggleMenu()">⋮</button>
+            <div class="dropdown-menu" *ngIf="menuOpen">
+                <div class="menu-item" *ngIf="!isCleared" (click)="clearChat()">Clear Chat</div>
+                <div class="menu-item" *ngIf="isCleared" (click)="restoreChat()">Restore Chat</div>
+                <div class="menu-item" (click)="blockUser()">
+                    {{ isBlocked ? 'Unblock' : 'Block' }}
                 </div>
             </div>
         </div>
-
-        <!-- Input area -->
-        <div class="input-area">
-            <input type="text" placeholder="Type a message..." [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" />
-
-            <button type="button" class="plus-btn" (click)="fileInput.click()">+</button>
-            <input type="file" #fileInput accept="image/*" (change)="sendImage($event)" style="display: none;" />
-
-            <button type="button" class="emoji-btn" (click)="toggleEmojiPicker($event)">😊</button>
-
-            <button (click)="sendMessage()">Send</button>
-        </div>
-
-        <!-- Emoji picker outside input area so it doesn't break layout -->
-        <div class="emoji-picker-container" #emojiPickerContainer *ngIf="showEmojiPicker">
-            <emoji-mart (emojiSelect)="addEmoji($event)"></emoji-mart>
-        </div>
-
 
     </div>
+
+
+
+    <!-- Messages area -->
+    <div class="messages" #messageList>
+        <div *ngFor="let msg of messages"
+            [ngClass]="{'message': true, 'me': msg.from === currentUserId, 'them': msg.from !== currentUserId}">
+            <div class="bubble">
+                <img *ngIf="msg.image" [src]="msg.image" class="chat-image" />
+                <div *ngIf="msg.content">{{ msg.content }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input area -->
+    <div class="input-area">
+        <input type="text" placeholder="Type a message..." [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" />
+
+        <button type="button" class="plus-btn" (click)="fileInput.click()">+</button>
+        <input type="file" #fileInput accept="image/*" (change)="sendImage($event)" style="display: none;" />
+
+        <button type="button" class="emoji-btn" (click)="toggleEmojiPicker($event)">😊</button>
+
+        <button (click)="sendMessage()">Send</button>
+    </div>
+
+    <!-- Emoji picker outside input area so it doesn't break layout -->
+    <div class="emoji-picker-container" #emojiPickerContainer *ngIf="showEmojiPicker">
+        <emoji-mart (emojiSelect)="addEmoji($event)"></emoji-mart>
+    </div>
+
+
 </div>
+<!-- </div> -->

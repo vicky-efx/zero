@@ -9,7 +9,6 @@
     </div>
   </div>
 
-
   <div *ngIf="otherUsers.length > 0; else noUsers">
     <div *ngFor="let u of otherUsers" class="chat-item" (click)="openChat(u.id)">
       <div class="chat-avatar">
@@ -18,18 +17,14 @@
       </div>
       <div class="chat-details">
         <div class="chat-name">{{ u.name }}</div>
-        <div class="chat-last">{{ u.email }}</div>
+        <div class="chat-last">{{ u.statusText }}</div>
       </div>
       <div class="chat-time">12:00 PM</div>
     </div>
   </div>
+
   <ng-template #noUsers>
     <p>No users found.</p>
-  </ng-template>
-
-
-  <ng-template #noUsers>
-    <p>No other users found.</p>
   </ng-template>
 
   <!-- Modal -->
@@ -38,5 +33,4 @@
       <img [src]="selectedUserImage" alt="User Profile" />
     </div>
   </div>
-
 </div>

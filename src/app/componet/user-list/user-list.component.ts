@@ -2,7 +2,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Component, Inject, PLATFORM_ID } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { UserService } from '../../services/user.service';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-user-list',
@@ -13,9 +13,9 @@ import { Observable } from 'rxjs';
 export class UserListComponent {
   user: any;
   otherUsers: any[] = [];
-
   showProfileModal = false;
   selectedUserImage = '';
+  private userSub!: Subscription;
 
   constructor(private router: Router, private userService: UserService, @Inject(PLATFORM_ID) private platformId: Object) { }
 
@@ -26,10 +26,17 @@ export class UserListComponent {
         this.handleMissingUser();
         return;
       }
+
       this.loadCurrentUser(userId);
       this.loadOtherUsers(userId);
-    } else {
-      console.log('Running on the server — sessionStorage not available');
+
+      // Update status to online
+      this.userService.updateUserStatus(userId, 'online');
+
+      // Set offline on window close
+      window.addEventListener('beforeunload', () => {
+        this.userService.updateUserStatus(userId, 'offline');
+      });
     }
   }
 
@@ -80,5 +87,11 @@ export class UserListComponent {
 
   closeProfileModal(): void {
     this.showProfileModal = false;
+  }
+
+  ngOnDestroy(): void {
+    if (this.userSub) {
+      this.userSub.unsubscribe();
+    }
   }
 }

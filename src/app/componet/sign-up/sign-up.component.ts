@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-sign-up',
-  imports: [FormsModule, RouterLink,CommonModule],
+  imports: [FormsModule, RouterLink, CommonModule],
   templateUrl: './sign-up.component.html',
   styleUrl: './sign-up.component.scss'
 })
@@ -26,7 +26,9 @@ export class SignUpComponent {
       name: this.name,
       email: this.email,
       password: this.password,
-      phoneNumber: this.phoneNumber
+      phoneNumber: this.phoneNumber,
+      status: 'online',              // ✅ set default status
+      lastSeen: Date.now()
     };
 
     this.userService.SignUp(newUser).subscribe({
