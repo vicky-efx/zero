@@ -6,8 +6,9 @@
             <span class="back-arrow" (click)="goBack()">←</span>
             <span class="user-name">
                 <i class="fa fa-heart heart-icon"></i> {{ userName }}
-                <div class="user-status-text">{{ userStatusText }}</div>
+                <div class="user-status-text" [style.color]="statusColor">{{ userStatusText }}</div>
             </span>
+
 
         </div>
 
@@ -31,7 +32,7 @@
         <div *ngFor="let msg of messages"
             [ngClass]="{'message': true, 'me': msg.from === currentUserId, 'them': msg.from !== currentUserId}">
             <div class="bubble">
-                <img *ngIf="msg.image" [src]="msg.image" class="chat-image" />
+                <img *ngIf="msg.image" [src]="msg.image" class="chat-image" (click)="openImageModal(msg.image)" />
                 <div *ngIf="msg.content">{{ msg.content }}</div>
             </div>
         </div>
@@ -54,6 +55,12 @@
         <emoji-mart (emojiSelect)="addEmoji($event)"></emoji-mart>
     </div>
 
+    <div class="image-modal-overlay" *ngIf="showImageModal" (click)="closeImageModal()">
+        <div class="image-modal-content" (click)="$event.stopPropagation()">
+            <img [src]="selectedImageUrl" alt="Preview Image" />
+            <button class="close-btn" (click)="closeImageModal()">×</button>
+        </div>
+    </div>
 
 </div>
 <!-- </div> -->

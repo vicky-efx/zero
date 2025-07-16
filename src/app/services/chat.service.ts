@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, addDoc, query, where, orderBy, getDocs, serverTimestamp, collectionData, writeBatch, doc } from '@angular/fire/firestore';
+import { Firestore, collection, addDoc, query, where, orderBy, getDocs, serverTimestamp, collectionData, writeBatch, doc, updateDoc } from '@angular/fire/firestore';
 import { from, map, Observable, of, switchMap } from 'rxjs';
 
 @Injectable({
@@ -114,5 +114,20 @@ export class ChatService {
     const q = query(blockedRef, where('userId', '==', currentUserId), where('blockedUserId', '==', otherUserId));
 
     return getDocs(q).then(snapshot => !snapshot.empty);
+  }
+
+  async markMessagesAsRead(currentUserId: string, otherUserId: string): Promise<void> {
+    const chatId = this.generateChatId(currentUserId, otherUserId);
+    const messagesRef = collection(this.firestore, `chats/${chatId}/messages`);
+    const unreadQuery = query(messagesRef, where('to', '==', currentUserId), where('read', '==', false));
+
+    const snapshot = await getDocs(unreadQuery);
+
+    const updatePromises = snapshot.docs.map(docSnap => {
+      const msgRef = doc(this.firestore, `chats/${chatId}/messages/${docSnap.id}`);
+      return updateDoc(msgRef, { read: true });
+    });
+
+    await Promise.all(updatePromises);
   }
 }

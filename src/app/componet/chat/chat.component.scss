@@ -52,10 +52,10 @@
 
         .user-status-text {
             font-size: 12px;
-            color: #555;
             font-weight: normal;
             margin-top: 2px;
         }
+
     }
 
     .menu-button {
@@ -233,6 +233,57 @@
     width: 95%;
     max-width: 320px;
 }
+
+.image-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+
+    .image-modal-content {
+        position: relative;
+        max-width: 90%;
+        max-height: 90%;
+        display: flex;
+        flex-direction: column;
+
+        img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 10px;
+            object-fit: contain;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            line-height: 35px;
+            text-align: center;
+            padding: 0;
+            transition: background 0.3s;
+
+            &:hover {
+                background: rgba(0, 0, 0, 0.8);
+            }
+        }
+    }
+}
+
 
 @media screen and (max-width: 480px) {
     .chat-container {

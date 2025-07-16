@@ -3,6 +3,7 @@ import { Component, Inject, PLATFORM_ID } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { Observable, Subscription } from 'rxjs';
+import { ChatService } from '../../services/chat.service';
 
 @Component({
   selector: 'app-user-list',
@@ -17,7 +18,7 @@ export class UserListComponent {
   selectedUserImage = '';
   private userSub!: Subscription;
 
-  constructor(private router: Router, private userService: UserService, @Inject(PLATFORM_ID) private platformId: Object) { }
+  constructor(private router: Router, private userService: UserService, private chatService: ChatService, @Inject(PLATFORM_ID) private platformId: Object) { }
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
@@ -59,16 +60,33 @@ export class UserListComponent {
   }
 
   private loadOtherUsers(userId: string): void {
-    this.userService.getAllUsersExcludeCurrent(userId).subscribe((users) => {
+    this.userService.getAllUsersExcludeCurrent(userId).subscribe(async (users) => {
       this.otherUsers = users;
-      console.log('Other users:', this.otherUsers);
+
+      for (const user of this.otherUsers) {
+        const info = await this.userService.getLastMessageInfo(userId, user.id);
+        user.lastMessage = info.lastMessage;
+        user.lastTime = info.lastTime;
+        user.unreadCount = info.unreadCount;
+      }
     });
   }
 
 
-  openChat(userId: String): void {
-    this.router.navigate(['/chat', userId]);
+  openChat(userId: string): void {
+    const currentUserId = sessionStorage.getItem('userId') || '';
+
+    // Call your ChatService to mark messages as read
+    this.chatService.markMessagesAsRead(currentUserId, userId)
+      .then(() => {
+        this.router.navigate(['/chat', userId]);
+      })
+      .catch(err => {
+        console.error('Error marking messages as read:', err);
+        this.router.navigate(['/chat', userId]); // Navigate anyway
+      });
   }
+
 
 
   goToProfile(): void {

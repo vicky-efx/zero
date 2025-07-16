@@ -28,6 +28,9 @@ export class ChatComponent {
   emojiPickerRef!: ElementRef;
   menuRef!: ElementRef;
   userStatusText: string = '';
+  statusColor = '';
+  selectedImageUrl: string | null = null;
+  showImageModal = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -50,10 +53,13 @@ export class ChatComponent {
 
       if (user?.status === 'online') {
         this.userStatusText = 'online';
+        this.statusColor = 'rgb(28 123 28)';
       } else {
         this.userStatusText = this.formatLastSeen(user?.lastSeen);
+        this.statusColor = 'black';
       }
     });
+
 
     this.checkIfBlocked();
 
@@ -223,5 +229,15 @@ export class ChatComponent {
     }
   }
 
+
+  openImageModal(imageUrl: string) {
+    this.selectedImageUrl = imageUrl;
+    this.showImageModal = true;
+  }
+
+  closeImageModal() {
+    this.showImageModal = false;
+    this.selectedImageUrl = null;
+  }
 
 }

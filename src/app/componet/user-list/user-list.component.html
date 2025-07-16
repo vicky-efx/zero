@@ -14,12 +14,21 @@
       <div class="chat-avatar">
         <img [src]="u.image ? u.image : 'https://i.pravatar.cc/40?u=' + u.id" alt="Avatar"
           (click)="openUserModal(u, $event)" />
+        <span *ngIf="u.status === 'online'" class="status-dot"></span>
       </div>
       <div class="chat-details">
         <div class="chat-name">{{ u.name }}</div>
-        <div class="chat-last">{{ u.statusText }}</div>
+        <div class="chat-status-text">
+          {{ u.status === 'online' ? 'online' : u.statusText }}
+        </div>
+        <div class="chat-last" *ngIf="u.unreadCount > 0">
+          {{ u.lastMessage || 'No messages yet' }}
+        </div>
       </div>
-      <div class="chat-time">12:00 PM</div>
+      <div class="chat-right">
+        <div class="chat-time">{{ u.lastTime }}</div>
+        <span *ngIf="u.unreadCount > 0" class="unread-badge">{{ u.unreadCount }}</span>
+      </div>
     </div>
   </div>
 
