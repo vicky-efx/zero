@@ -129,51 +129,43 @@ export class UserService {
     }
   }
 
-  getLastMessageInfo(currentUserId: string, otherUserId: string): Promise<{ lastMessage: string, lastTime: string, unreadCount: number }> {
+  async getLastMessageInfo(currentUserId: string, otherUserId: string): Promise<{ lastMessage: string, lastTime: string, unreadCount: number }> {
     const chatId = this.chatService.generateChatId(currentUserId, otherUserId);
     const messagesCollection = collection(this.firestore, `chats/${chatId}/messages`);
 
+    let lastMessage = '';
+    let lastTime = '';
+    let unreadCount = 0;
+
+    // 1. Get last message
     const lastMsgQuery = query(messagesCollection, orderBy('timestamp', 'desc'), limit(1));
+    const lastMsgSnapshot = await getDocs(lastMsgQuery);
 
-    return getDocs(lastMsgQuery).then(snapshot => {
-      let lastMessage = '';
-      let lastTime = '';
-      let unreadCount = 0;
+    if (!lastMsgSnapshot.empty) {
+      const msgData = lastMsgSnapshot.docs[0].data();
+      lastMessage = msgData['content'] || 'Image';
 
-      if (!snapshot.empty) {
-        const msgData = snapshot.docs[0].data();
-        lastMessage = msgData['content'] || 'Image';
+      const rawTimestamp = msgData['timestamp'];
+      let date: Date;
 
-        const rawTimestamp = msgData['timestamp'];
-        let date: Date;
-
-        if (rawTimestamp && typeof rawTimestamp.toDate === 'function') {
-          // Firestore Timestamp object
-          date = rawTimestamp.toDate();
-        } else if (typeof rawTimestamp === 'string') {
-          // fallback in case stored as string
-          date = new Date(rawTimestamp);
-        } else {
-          // fallback to now
-          date = new Date();
-        }
-
-        lastTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-
+      if (rawTimestamp && typeof rawTimestamp.toDate === 'function') {
+        date = rawTimestamp.toDate();
+      } else if (typeof rawTimestamp === 'string') {
+        date = new Date(rawTimestamp);
+      } else {
+        date = new Date();
       }
 
-      const unreadQuery = query(
-        messagesCollection,
-        where('to', '==', currentUserId),
-        where('read', '==', false)
-      );
+      lastTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
 
-      return getDocs(unreadQuery).then(unreadSnapshot => {
-        unreadCount = unreadSnapshot.size;
-        return { lastMessage, lastTime, unreadCount };
-      });
-    });
+    // 2. Get unread count
+    const unreadQuery = query(messagesCollection, where('to', '==', currentUserId), where('read', '==', false));
+    const unreadSnapshot = await getDocs(unreadQuery);
+    unreadCount = unreadSnapshot.size;
+
+    return { lastMessage, lastTime, unreadCount };
   }
+
 
 }

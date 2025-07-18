@@ -11,24 +11,36 @@
 
   <div *ngIf="otherUsers.length > 0; else noUsers">
     <div *ngFor="let u of otherUsers" class="chat-item" (click)="openChat(u.id)">
-      <div class="chat-avatar">
-        <img [src]="u.image ? u.image : 'https://i.pravatar.cc/40?u=' + u.id" alt="Avatar"
-          (click)="openUserModal(u, $event)" />
-        <span *ngIf="u.status === 'online'" class="status-dot"></span>
-      </div>
-      <div class="chat-details">
-        <div class="chat-name">{{ u.name }}</div>
-        <div class="chat-status-text">
-          {{ u.status === 'online' ? 'online' : u.statusText }}
+
+      <!-- LEFT: Avatar + Name + Status -->
+      <div class="chat-left">
+        <div class="chat-avatar">
+          <img [src]="u.image ? u.image : 'https://i.pravatar.cc/40?u=' + u.id" alt="Avatar"
+            (click)="openUserModal(u, $event)" />
+          <span *ngIf="u.status === 'online'" class="status-dot"></span>
         </div>
-        <div class="chat-last" *ngIf="u.unreadCount > 0">
-          {{ u.lastMessage || 'No messages yet' }}
+        <div class="chat-info">
+          <div class="chat-name">{{ u.name }}</div>
+          <div class="chat-status-text">
+            {{ u.status === 'online' ? 'Online' : u.statusText }}
+          </div>
         </div>
       </div>
+
+      <!-- CENTER: Last message + Unread count -->
+      <div class="chat-center">
+        <div class="last-message">{{ u.lastMessage || 'No messages yet' }}</div>
+      </div>
+
+      <!-- RIGHT: Time + Unread Count -->
       <div class="chat-right">
         <div class="chat-time">{{ u.lastTime }}</div>
-        <span *ngIf="u.unreadCount > 0" class="unread-badge">{{ u.unreadCount }}</span>
+        <div *ngIf="u.unreadCount > 0" class="unread-badge">
+          {{ u.unreadCount }}
+        </div>
       </div>
+
+
     </div>
   </div>
 

@@ -6,6 +6,7 @@ import { UserService } from '../../services/user.service';
 import { ChatService } from '../../services/chat.service';
 import { Subscription } from 'rxjs';
 import { PickerModule } from '@ctrl/ngx-emoji-mart';
+import { format, isToday, isYesterday, isThisWeek, differenceInCalendarDays } from 'date-fns';
 
 @Component({
   selector: 'app-chat',
@@ -31,6 +32,10 @@ export class ChatComponent {
   statusColor = '';
   selectedImageUrl: string | null = null;
   showImageModal = false;
+  pressTimer: any;
+  pressDuration = 800;
+  showUnsendModal = false;
+  messageToUnsend: any = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -53,7 +58,7 @@ export class ChatComponent {
 
       if (user?.status === 'online') {
         this.userStatusText = 'online';
-        this.statusColor = 'rgb(28 123 28)';
+        this.statusColor = '#138f53';
       } else {
         this.userStatusText = this.formatLastSeen(user?.lastSeen);
         this.statusColor = 'black';
@@ -78,11 +83,14 @@ export class ChatComponent {
   loadMessages() {
     this.subscription = this.chatService
       .getMessages(this.currentUserId, this.selectedUserId)
-      .subscribe(msgs => {
+      .subscribe(async msgs => {
         this.messages = msgs;
         this.scrollToBottom();
+
+        await this.chatService.markMessagesAsRead(this.selectedUserId, this.currentUserId);
       });
   }
+
 
   ngOnDestroy(): void {
     if (this.subscription) {
@@ -180,13 +188,14 @@ export class ChatComponent {
     });
   }
 
-  addEmoji(event: any) {
-    this.newMessage += event.emoji.native;
+  toggleEmojiPicker(event: Event): void {
+    event.stopPropagation();
+    this.showEmojiPicker = !this.showEmojiPicker;
   }
 
-  toggleEmojiPicker(event: MouseEvent) {
-    event.stopPropagation(); // 👈 important!
-    this.showEmojiPicker = !this.showEmojiPicker;
+  addEmoji(event: any): void {
+    this.newMessage += event.emoji.native;
+    this.showEmojiPicker = false;
   }
 
   @HostListener('document:click', ['$event'])
@@ -229,6 +238,11 @@ export class ChatComponent {
     }
   }
 
+  formatTimestamp(ts: any): string {
+    if (!ts) return '';
+    const date = ts.toDate ? ts.toDate() : new Date(ts);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
 
   openImageModal(imageUrl: string) {
     this.selectedImageUrl = imageUrl;
@@ -238,6 +252,99 @@ export class ChatComponent {
   closeImageModal() {
     this.showImageModal = false;
     this.selectedImageUrl = null;
+  }
+
+  sendMeetInvite() {
+    const randomPart = Math.random().toString(36).substring(2, 8); // e.g., "4kz8fe"
+    const roomId = `${this.currentUserId}_${randomPart}`;          // e.g., "12_4kz8fe"
+    const meetLink = `/video-call/${roomId}`;
+
+    const message = {
+      from: this.currentUserId,
+      to: this.selectedUserId,
+      content: meetLink,
+      timestamp: new Date().toISOString()
+    };
+
+    this.chatService.sendMessage(this.currentUserId, this.selectedUserId, meetLink)
+      .then(() => {
+        console.log("Meet invite sent:", meetLink);
+      })
+      .catch(err => {
+        console.error("Error sending invite:", err);
+      });
+  }
+
+  extractVideoCallPath(content: string): string {
+    const match = content.match(/\/video-call\/[a-zA-Z0-9_\-]+/);
+    return match ? match[0] : '/';
+  }
+
+  startPress(message: any) {
+    // Only allow long press on your own non-unsent messages
+    if (message.from !== this.currentUserId || message.unsent) return;
+
+    this.pressTimer = setTimeout(() => {
+      this.messageToUnsend = message;
+      this.showUnsendModal = true;
+    }, 600); // 600ms = long press
+  }
+
+  cancelPress() {
+    clearTimeout(this.pressTimer);
+  }
+
+  closeUnsendModal() {
+    this.showUnsendModal = false;
+    this.messageToUnsend = null;
+  }
+
+  unsendConfirmed() {
+    if (!this.messageToUnsend) return;
+
+    this.chatService.unsendMessage(this.chatId, this.messageToUnsend).then(() => {
+      this.closeUnsendModal();
+    }).catch(err => {
+      console.error("Unsend failed", err);
+      this.closeUnsendModal();
+    });
+  }
+
+  shouldShowDateSeparator(index: number): boolean {
+    if (index === 0) return true;
+
+    const currentDate = new Date(this.messages[index].timestamp);
+    const prevDate = new Date(this.messages[index - 1].timestamp);
+
+    return currentDate.toDateString() !== prevDate.toDateString();
+  }
+
+  formatDateSeparator(timestamp: any): string {
+    if (!timestamp) return '';
+
+    try {
+      const date = timestamp.toDate?.() || timestamp;
+
+      if (isToday(date)) {
+        return 'Today';
+      }
+
+      if (isYesterday(date)) {
+        return 'Yesterday';
+      }
+
+      const daysAgo = differenceInCalendarDays(new Date(), date);
+
+      if (daysAgo <= 6) {
+        return format(date, 'EEEE'); // e.g., "Monday", "Thursday"
+      }
+
+      return format(date, 'dd MMM yyyy'); // e.g., "12 Jul 2025"
+
+    } catch (error) {
+      console.error('Date parsing failed:', timestamp, error);
+      return '';
+    }
   }
 
 }

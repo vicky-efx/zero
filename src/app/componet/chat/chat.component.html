@@ -1,59 +1,90 @@
-<!-- <div class="page-container"> -->
 <div class="chat-container">
-    <!-- Header -->
     <div class="header love-header">
-        <div class="header-left">
+        <!-- Left: Back Arrow, Name and Status -->
+        <div class="left-section">
             <span class="back-arrow" (click)="goBack()">←</span>
             <span class="user-name">
-                <i class="fa fa-heart heart-icon"></i> {{ userName }}
+                {{ userName }}
                 <div class="user-status-text" [style.color]="statusColor">{{ userStatusText }}</div>
             </span>
-
-
         </div>
 
-        <div class="menu-container" #menuContainer>
-            <button class="menu-button" (click)="toggleMenu()">⋮</button>
-            <div class="dropdown-menu" *ngIf="menuOpen">
-                <div class="menu-item" *ngIf="!isCleared" (click)="clearChat()">Clear Chat</div>
-                <div class="menu-item" *ngIf="isCleared" (click)="restoreChat()">Restore Chat</div>
-                <div class="menu-item" (click)="blockUser()">
-                    {{ isBlocked ? 'Unblock' : 'Block' }}
+        <!-- Right: Buttons and Menu -->
+        <div class="right-section">
+            <div class="header-buttons">
+                <button class="header-btn" (click)="sendMeetInvite()">🎥</button>
+            </div>
+
+            <div class="menu-container" #menuContainer>
+                <button class="menu-button" (click)="toggleMenu()">⋮</button>
+                <div class="dropdown-menu" *ngIf="menuOpen">
+                    <div class="menu-item" *ngIf="!isCleared" (click)="clearChat()">Clear Chat</div>
+                    <div class="menu-item" *ngIf="isCleared" (click)="restoreChat()">Restore Chat</div>
+                    <div class="menu-item" (click)="blockUser()">{{ isBlocked ? 'Unblock' : 'Block' }}</div>
                 </div>
             </div>
         </div>
-
     </div>
-
 
 
     <!-- Messages area -->
     <div class="messages" #messageList>
-        <div *ngFor="let msg of messages"
-            [ngClass]="{'message': true, 'me': msg.from === currentUserId, 'them': msg.from !== currentUserId}">
-            <div class="bubble">
-                <img *ngIf="msg.image" [src]="msg.image" class="chat-image" (click)="openImageModal(msg.image)" />
-                <div *ngIf="msg.content">{{ msg.content }}</div>
+
+        <ng-container *ngFor="let msg of messages; let i = index">
+
+            <!-- Date Separator -->
+            <div *ngIf="shouldShowDateSeparator(i)" class="date-separator">
+                {{ formatDateSeparator(msg.timestamp) }}
             </div>
+
+            <!-- Message Bubble -->
+            <div [ngClass]="{
+        'message': true,
+        'me': msg.from === currentUserId,
+        'them': msg.from !== currentUserId
+      }" (mousedown)="startPress(msg)" (mouseup)="cancelPress()" (mouseleave)="cancelPress()"
+                (touchstart)="startPress(msg)" (touchend)="cancelPress()">
+                <!-- If message contains video call link -->
+                <ng-container *ngIf="msg.content?.includes('/video-call/'); else normalMessage">
+                    <a class="video-call-link" [routerLink]="[msg.content]" target="_blank">
+                        📹 Join Video Call
+                    </a>
+                </ng-container>
+
+                <!-- Normal Text Message -->
+                <ng-template #normalMessage>
+                    <span class="text-content">{{ msg.content }}</span>
+                </ng-template>
+            </div>
+        </ng-container>
+    </div>
+
+    <div class="chat-footer">
+        <!-- Emoji Picker -->
+        <div class="emoji-panel" *ngIf="showEmojiPicker">
+            <emoji-mart [set]="'apple'" (emojiSelect)="addEmoji($event)"
+                [style]="{ width: '320px', background: '#2a2f32' }" theme="dark"></emoji-mart>
+        </div>
+
+        <div class="input-container">
+            <!-- Emoji Button -->
+            <button class="icon-btn" (click)="toggleEmojiPicker($event)">😄</button>
+
+            <!-- File Upload Button -->
+            <button class="icon-btn" (click)="fileInput.click()">📎</button>
+            <input type="file" #fileInput accept="image/*" (change)="sendImage($event)" style="display: none" />
+
+            <!-- Input Box -->
+            <input type="text" placeholder="Type a message" [(ngModel)]="newMessage" (keyup.enter)="sendMessage()"
+                class="message-input" />
+
+            <!-- Send Button -->
+            <button class="send-btn" (click)="sendMessage()">
+                <span class="send-icon">➤</span>
+            </button>
         </div>
     </div>
 
-    <!-- Input area -->
-    <div class="input-area">
-        <input type="text" placeholder="Type a message..." [(ngModel)]="newMessage" (keyup.enter)="sendMessage()" />
-
-        <button type="button" class="plus-btn" (click)="fileInput.click()">+</button>
-        <input type="file" #fileInput accept="image/*" (change)="sendImage($event)" style="display: none;" />
-
-        <button type="button" class="emoji-btn" (click)="toggleEmojiPicker($event)">😊</button>
-
-        <button (click)="sendMessage()">Send</button>
-    </div>
-
-    <!-- Emoji picker outside input area so it doesn't break layout -->
-    <div class="emoji-picker-container" #emojiPickerContainer *ngIf="showEmojiPicker">
-        <emoji-mart (emojiSelect)="addEmoji($event)"></emoji-mart>
-    </div>
 
     <div class="image-modal-overlay" *ngIf="showImageModal" (click)="closeImageModal()">
         <div class="image-modal-content" (click)="$event.stopPropagation()">
@@ -63,4 +94,14 @@
     </div>
 
 </div>
-<!-- </div> -->
+
+<!-- Unsend Confirmation Modal -->
+<div class="unsend-modal-overlay" *ngIf="showUnsendModal" (click)="closeUnsendModal()">
+    <div class="unsend-modal-content" (click)="$event.stopPropagation()">
+        <p>Do you want to unsend this message?</p>
+        <div class="modal-buttons">
+            <button class="cancel-btn" (click)="closeUnsendModal()">Cancel</button>
+            <button class="confirm-btn" (click)="unsendConfirmed()">Unsend</button>
+        </div>
+    </div>
+</div>

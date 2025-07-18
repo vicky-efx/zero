@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Firestore, collection, addDoc, query, where, orderBy, getDocs, serverTimestamp, collectionData, writeBatch, doc, updateDoc } from '@angular/fire/firestore';
+import { Firestore, collection, addDoc, query, where, orderBy, getDocs, serverTimestamp, collectionData, writeBatch, doc, updateDoc, deleteDoc } from '@angular/fire/firestore';
 import { from, map, Observable, of, switchMap } from 'rxjs';
 
 @Injectable({
@@ -29,6 +29,7 @@ export class ChatService {
         from: fromId,
         to: toId,
         timestamp: serverTimestamp(),
+        read: false
       };
 
       if (content) msgData.content = content;
@@ -116,18 +117,33 @@ export class ChatService {
     return getDocs(q).then(snapshot => !snapshot.empty);
   }
 
-  async markMessagesAsRead(currentUserId: string, otherUserId: string): Promise<void> {
-    const chatId = this.generateChatId(currentUserId, otherUserId);
+  async markMessagesAsRead(senderId: string, receiverId: string): Promise<void> {
+    const chatId = this.generateChatId(senderId, receiverId);
     const messagesRef = collection(this.firestore, `chats/${chatId}/messages`);
-    const unreadQuery = query(messagesRef, where('to', '==', currentUserId), where('read', '==', false));
+
+    const unreadQuery = query(
+      messagesRef,
+      where('to', '==', receiverId),
+      where('read', '==', false)
+    );
 
     const snapshot = await getDocs(unreadQuery);
 
-    const updatePromises = snapshot.docs.map(docSnap => {
-      const msgRef = doc(this.firestore, `chats/${chatId}/messages/${docSnap.id}`);
-      return updateDoc(msgRef, { read: true });
-    });
+    const updatePromises = snapshot.docs.map(docSnap =>
+      updateDoc(docSnap.ref, { read: true })
+    );
 
     await Promise.all(updatePromises);
   }
+
+  unsendMessage(chatId: string, message: any): Promise<void> {
+    const messageRef = doc(this.firestore, `chats/${chatId}/messages/${message.id}`);
+    return updateDoc(messageRef, {
+      content: '🚫 Message unsent',
+      unsent: true
+    });
+  }
+
+
+
 }

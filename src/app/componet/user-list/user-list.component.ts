@@ -18,27 +18,17 @@ export class UserListComponent {
   selectedUserImage = '';
   private userSub!: Subscription;
 
-  constructor(private router: Router, private userService: UserService, private chatService: ChatService, @Inject(PLATFORM_ID) private platformId: Object) { }
+  constructor(private router: Router, private userService: UserService, private chatService: ChatService) { }
 
   ngOnInit(): void {
-    if (isPlatformBrowser(this.platformId)) {
-      const userId = sessionStorage.getItem('userId');
-      if (!userId) {
-        this.handleMissingUser();
-        return;
-      }
-
-      this.loadCurrentUser(userId);
-      this.loadOtherUsers(userId);
-
-      // Update status to online
-      this.userService.updateUserStatus(userId, 'online');
-
-      // Set offline on window close
-      window.addEventListener('beforeunload', () => {
-        this.userService.updateUserStatus(userId, 'offline');
-      });
+    const userId = sessionStorage.getItem('userId');
+    if (!userId) {
+      this.handleMissingUser();
+      return;
     }
+
+    this.loadCurrentUser(userId);
+    this.loadOtherUsers(userId);
   }
 
   private handleMissingUser(): void {
