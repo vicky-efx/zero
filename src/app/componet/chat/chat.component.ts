@@ -51,8 +51,6 @@ export class ChatComponent {
   ) { }
 
   @ViewChild('messageList') messageList!: ElementRef;
-  @ViewChild('emojiPickerContainer') emojiPickerContainer!: ElementRef;
-  @ViewChild('menuContainer') menuContainer!: ElementRef;
 
   ngOnInit(): void {
     this.currentUserId = sessionStorage.getItem('userId') || '';
@@ -71,9 +69,6 @@ export class ChatComponent {
       }
     });
 
-
-    this.checkIfBlocked();
-
     this.chatService.isChatCleared(this.currentUserId, this.chatId).then(cleared => {
       this.isCleared = cleared;
 
@@ -84,7 +79,6 @@ export class ChatComponent {
       }
     });
   }
-
 
   loadMessages() {
     this.subscription = this.chatService
@@ -131,8 +125,6 @@ export class ChatComponent {
 
     return result;
   }
-
-
 
   ngOnDestroy(): void {
     if (this.subscription) {
@@ -185,95 +177,8 @@ export class ChatComponent {
     this.replyToMessage = null;
   }
 
-
-
-  sendImage(event: any) {
-    const file: File = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const base64String = reader.result as string;
-
-        this.chatService
-          .sendMessage(this.currentUserId, this.selectedUserId, undefined, base64String)
-          .then(() => { })
-          .catch(err => {
-            console.error(err);
-            alert(err);
-          });
-      };
-      reader.readAsDataURL(file);
-    }
-  }
-
-  toggleMenu() {
-    this.menuOpen = !this.menuOpen;
-  }
-
   goBack(): void {
     this.router.navigate(['/user-list']);
-  }
-
-  clearChat() {
-    this.chatService.clearChat(this.currentUserId, this.chatId).then(() => {
-      this.isCleared = true;
-      this.messages = [];
-      this.menuOpen = false;
-    });
-  }
-
-  restoreChat() {
-    this.chatService.restoreChat(this.currentUserId, this.chatId).then(() => {
-      this.isCleared = false;
-      this.loadMessages();
-      this.menuOpen = false;
-    });
-  }
-
-  blockUser() {
-    if (this.isBlocked) {
-      this.chatService.unblockUser(this.currentUserId, this.selectedUserId).then(() => {
-        this.isBlocked = false;
-        console.log('User unblocked');
-        this.menuOpen = false;
-      });
-    } else {
-      this.chatService.blockUser(this.currentUserId, this.selectedUserId).then(() => {
-        this.isBlocked = true;
-        console.log('User blocked');
-        this.menuOpen = false;
-      });
-    }
-  }
-
-  checkIfBlocked() {
-    this.chatService.isUserBlocked(this.currentUserId, this.selectedUserId).then(isBlocked => {
-      this.isBlocked = isBlocked;
-    });
-  }
-
-  toggleEmojiPicker(event: Event): void {
-    event.stopPropagation();
-    this.showEmojiPicker = !this.showEmojiPicker;
-  }
-
-  addEmoji(event: any): void {
-    this.newMessage += event.emoji.native;
-    this.showEmojiPicker = false;
-  }
-
-  @HostListener('document:click', ['$event'])
-  onClickOutside(event: MouseEvent) {
-    const clickedInsideMenu = this.menuContainer?.nativeElement.contains(event.target);
-    const clickedInsideEmoji = this.emojiPickerContainer?.nativeElement.contains(event.target);
-
-    if (!clickedInsideMenu && this.menuOpen) {
-      this.menuOpen = false;
-    }
-
-    if (!clickedInsideEmoji && this.showEmojiPicker) {
-      this.showEmojiPicker = false;
-    }
   }
 
   formatLastSeen(lastSeen: number | undefined): string {
@@ -308,16 +213,6 @@ export class ChatComponent {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
-  openImageModal(imageUrl: string) {
-    this.selectedImageUrl = imageUrl;
-    this.showImageModal = true;
-  }
-
-  closeImageModal() {
-    this.showImageModal = false;
-    this.selectedImageUrl = null;
-  }
-
   sendMeetInvite() {
     const randomPart = Math.random().toString(36).substring(2, 8); // e.g., "4kz8fe"
     const roomId = `${this.currentUserId}_${randomPart}`;          // e.g., "12_4kz8fe"
@@ -339,10 +234,10 @@ export class ChatComponent {
       });
   }
 
-  extractVideoCallPath(content: string): string {
-    const match = content.match(/\/video-call\/[a-zA-Z0-9_\-]+/);
-    return match ? match[0] : '/';
-  }
+  // extractVideoCallPath(content: string): string {
+  //   const match = content.match(/\/video-call\/[a-zA-Z0-9_\-]+/);
+  //   return match ? match[0] : '/';
+  // }
 
   startPress(message: any) {
     // Only allow long press on your own non-unsent messages
@@ -374,67 +269,41 @@ export class ChatComponent {
     });
   }
 
-  shouldShowDateSeparator(index: number): boolean {
-    if (index === 0) return true;
-
-    const currentDate = new Date(this.messages[index].timestamp);
-    const prevDate = new Date(this.messages[index - 1].timestamp);
-
-    return currentDate.toDateString() !== prevDate.toDateString();
-  }
-
-  formatDateSeparator(timestamp: any): string {
-    if (!timestamp) return '';
-
-    try {
-      const date = timestamp.toDate?.() || timestamp;
-
-      if (isToday(date)) {
-        return 'Today';
-      }
-
-      if (isYesterday(date)) {
-        return 'Yesterday';
-      }
-
-      const daysAgo = differenceInCalendarDays(new Date(), date);
-
-      if (daysAgo <= 6) {
-        return format(date, 'EEEE'); // e.g., "Monday", "Thursday"
-      }
-
-      return format(date, 'dd MMM yyyy'); // e.g., "12 Jul 2025"
-
-    } catch (error) {
-      console.error('Date parsing failed:', timestamp, error);
-      return '';
-    }
-  }
-
-  enlargeImage(url: string) {
-    window.open(url, '_blank');
-  }
-
   handleTouchStart(event: TouchEvent) {
     this.touchStartX = event.changedTouches[0].screenX;
   }
 
   handleTouchMove(event: TouchEvent, msg: any) {
     this.touchEndX = event.changedTouches[0].screenX;
+    const diff = this.touchEndX - this.touchStartX;
 
-    if (this.touchEndX - this.touchStartX > 100 && msg.from !== this.currentUserId) {
+    // Swipe right for incoming messages
+    if (diff > 100 && msg.from !== this.currentUserId) {
       this.setReplyTo(msg);
+    }
 
-      const target = event.target as HTMLElement;
-      target.classList.add('swipe-reply');  // ✅ no TS error now
+    // Swipe left for your own messages
+    if (diff < -100 && msg.from === this.currentUserId) {
+      this.setReplyTo(msg);
+    }
+
+    // Highlight swipe visually
+    const target = (event.target as HTMLElement).closest('.message');
+    if (target) {
+      target.classList.add('swipe-reply');
+
+      // Remove the class after a short delay (optional)
+      setTimeout(() => {
+        target.classList.remove('swipe-reply');
+      }, 600);
     }
   }
-
 
 
   handleTouchEnd() {
     this.touchStartX = 0;
     this.touchEndX = 0;
   }
+
 
 }

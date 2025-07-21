@@ -20,22 +20,6 @@
                             fill="currentColor"></path>
                     </svg></span>
             </div>
-
-            <div class="menu-container" #menuContainer>
-                <span aria-hidden="true" data-icon="more-refreshed" class=""><svg viewBox="0 0 24 24" height="24"
-                        width="24" preserveAspectRatio="xMidYMid meet" class="" fill="none" (click)="toggleMenu()">
-                        <title>more-refreshed</title>
-                        <path
-                            d="M12 20C11.45 20 10.9792 19.8042 10.5875 19.4125C10.1958 19.0208 10 18.55 10 18C10 17.45 10.1958 16.9792 10.5875 16.5875C10.9792 16.1958 11.45 16 12 16C12.55 16 13.0208 16.1958 13.4125 16.5875C13.8042 16.9792 14 17.45 14 18C14 18.55 13.8042 19.0208 13.4125 19.4125C13.0208 19.8042 12.55 20 12 20ZM12 14C11.45 14 10.9792 13.8042 10.5875 13.4125C10.1958 13.0208 10 12.55 10 12C10 11.45 10.1958 10.9792 10.5875 10.5875C10.9792 10.1958 11.45 10 12 10C12.55 10 13.0208 10.1958 13.4125 10.5875C13.8042 10.9792 14 11.45 14 12C14 12.55 13.8042 13.0208 13.4125 13.4125C13.0208 13.8042 12.55 14 12 14ZM12 8C11.45 8 10.9792 7.80417 10.5875 7.4125C10.1958 7.02083 10 6.55 10 6C10 5.45 10.1958 4.97917 10.5875 4.5875C10.9792 4.19583 11.45 4 12 4C12.55 4 13.0208 4.19583 13.4125 4.5875C13.8042 4.97917 14 5.45 14 6C14 6.55 13.8042 7.02083 13.4125 7.4125C13.0208 7.80417 12.55 8 12 8Z"
-                            fill="currentColor"></path>
-                    </svg></span>
-
-                <div class="dropdown-menu" *ngIf="menuOpen">
-                    <div class="menu-item" *ngIf="!isCleared" (click)="clearChat()">Clear Chat</div>
-                    <div class="menu-item" *ngIf="isCleared" (click)="restoreChat()">Restore Chat</div>
-                    <div class="menu-item" (click)="blockUser()">{{ isBlocked ? 'Unblock' : 'Block' }}</div>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -83,8 +67,6 @@
                 </div>
 
                 <!-- Images & Videos -->
-                <img *ngIf="msg.image" [src]="msg.image" alt="Image" class="image-message"
-                    (click)="enlargeImage(msg.image)" />
                 <video *ngIf="msg.videoUrl" controls class="video-message">
                     <source [src]="msg.videoUrl" type="video/mp4" />
                     Your browser does not support the video tag.
@@ -92,6 +74,17 @@
             </div>
 
         </ng-container>
+    </div>
+
+    <!-- Unsend Confirmation Modal -->
+    <div class="unsend-modal-overlay" *ngIf="showUnsendModal" (click)="closeUnsendModal()">
+        <div class="unsend-modal-content" (click)="$event.stopPropagation()">
+            <p>Do you want to unsend this message?</p>
+            <div class="modal-buttons">
+                <button class="cancel-btn" (click)="closeUnsendModal()">Cancel</button>
+                <button class="confirm-btn" (click)="unsendConfirmed()">Unsend</button>
+            </div>
+        </div>
     </div>
 
     <div class="chat-footer">
@@ -104,37 +97,7 @@
             <div class="reply-preview-content">{{ replyToMessage.content }}</div>
         </div>
 
-        <!-- Emoji Picker -->
-        <div class="emoji-panel" *ngIf="showEmojiPicker">
-            <emoji-mart [set]="'apple'" (emojiSelect)="addEmoji($event)"
-                [style]="{ width: '320px', background: '#ffffff' }"></emoji-mart>
-        </div>
-
         <div class="input-container">
-            <!-- Emoji Button -->
-
-            <span aria-hidden="true" data-icon="expressions" class=""><svg viewBox="0 0 24 24" height="24" width="24"
-                    preserveAspectRatio="xMidYMid meet" class="" fill="none" (click)="toggleEmojiPicker($event)">
-                    <title>expressions</title>
-                    <path
-                        d="M8.49893 10.2521C9.32736 10.2521 9.99893 9.5805 9.99893 8.75208C9.99893 7.92365 9.32736 7.25208 8.49893 7.25208C7.6705 7.25208 6.99893 7.92365 6.99893 8.75208C6.99893 9.5805 7.6705 10.2521 8.49893 10.2521Z"
-                        fill="currentColor"></path>
-                    <path
-                        d="M17.0011 8.75208C17.0011 9.5805 16.3295 10.2521 15.5011 10.2521C14.6726 10.2521 14.0011 9.5805 14.0011 8.75208C14.0011 7.92365 14.6726 7.25208 15.5011 7.25208C16.3295 7.25208 17.0011 7.92365 17.0011 8.75208Z"
-                        fill="currentColor"></path>
-                    <path fill-rule="evenodd" clip-rule="evenodd"
-                        d="M16.8221 19.9799C15.5379 21.2537 13.8087 21.9781 12 22H9.27273C5.25611 22 2 18.7439 2 14.7273V9.27273C2 5.25611 5.25611 2 9.27273 2H14.7273C18.7439 2 22 5.25611 22 9.27273V11.8141C22 13.7532 21.2256 15.612 19.8489 16.9776L16.8221 19.9799ZM14.7273 4H9.27273C6.36068 4 4 6.36068 4 9.27273V14.7273C4 17.6393 6.36068 20 9.27273 20H11.3331C11.722 19.8971 12.0081 19.5417 12.0058 19.1204L11.9935 16.8564C11.9933 16.8201 11.9935 16.784 11.9941 16.7479C11.0454 16.7473 10.159 16.514 9.33502 16.0479C8.51002 15.5812 7.84752 14.9479 7.34752 14.1479C7.24752 13.9479 7.25585 13.7479 7.37252 13.5479C7.48919 13.3479 7.66419 13.2479 7.89752 13.2479L13.5939 13.2479C14.4494 12.481 15.5811 12.016 16.8216 12.0208L19.0806 12.0296C19.5817 12.0315 19.9889 11.6259 19.9889 11.1248V9.07648H19.9964C19.8932 6.25535 17.5736 4 14.7273 4ZM14.0057 19.1095C14.0066 19.2605 13.9959 19.4089 13.9744 19.5537C14.5044 19.3124 14.9926 18.9776 15.4136 18.5599L18.4405 15.5576C18.8989 15.1029 19.2653 14.5726 19.5274 13.996C19.3793 14.0187 19.2275 14.0301 19.0729 14.0295L16.8138 14.0208C15.252 14.0147 13.985 15.2837 13.9935 16.8455L14.0057 19.1095Z"
-                        fill="currentColor"></path>
-                </svg></span>
-
-            <svg viewBox="0 0 24 24" width="24" preserveAspectRatio="xMidYMid meet" class="x11xpdln x1d8287x x1h4ghdb"
-                fill="none" (click)="fileInput.click()">
-                <title>plus-rounded</title>
-                <path
-                    d="M11 13H5.5C4.94772 13 4.5 12.5523 4.5 12C4.5 11.4477 4.94772 11 5.5 11H11V5.5C11 4.94772 11.4477 4.5 12 4.5C12.5523 4.5 13 4.94772 13 5.5V11H18.5C19.0523 11 19.5 11.4477 19.5 12C19.5 12.5523 19.0523 13 18.5 13H13V18.5C13 19.0523 12.5523 19.5 12 19.5C11.4477 19.5 11 19.0523 11 18.5V13Z"
-                    fill="currentColor"></path>
-            </svg>
-            <input type="file" #fileInput accept="image/*" (change)="sendImage($event)" style="display: none" />
 
             <!-- Input Box -->
             <input type="text" placeholder="Type a message" [(ngModel)]="newMessage" (keyup.enter)="sendMessage()"
@@ -144,24 +107,6 @@
             <button class="send-btn" (click)="sendMessage()">
                 <span class="send-icon">➤</span>
             </button>
-        </div>
-    </div>
-
-    <div class="image-modal-overlay" *ngIf="showImageModal" (click)="closeImageModal()">
-        <div class="image-modal-content" (click)="$event.stopPropagation()">
-            <img [src]="selectedImageUrl" alt="Preview Image" />
-            <button class="close-btn" (click)="closeImageModal()">×</button>
-        </div>
-    </div>
-</div>
-
-<!-- Unsend Confirmation Modal -->
-<div class="unsend-modal-overlay" *ngIf="showUnsendModal" (click)="closeUnsendModal()">
-    <div class="unsend-modal-content" (click)="$event.stopPropagation()">
-        <p>Do you want to unsend this message?</p>
-        <div class="modal-buttons">
-            <button class="cancel-btn" (click)="closeUnsendModal()">Cancel</button>
-            <button class="confirm-btn" (click)="unsendConfirmed()">Unsend</button>
         </div>
     </div>
 </div>
