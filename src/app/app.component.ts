@@ -1,4 +1,4 @@
-import { Component, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, HostListener, Inject, PLATFORM_ID } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { UserService } from './services/user.service';
 import { isPlatformBrowser } from '@angular/common';
@@ -15,7 +15,7 @@ export class AppComponent {
     private userService: UserService,
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
@@ -29,9 +29,19 @@ export class AppComponent {
     }
 
     this.userService.updateUserStatus(userId, 'online');
+  }
 
-    window.addEventListener('beforeunload', () => {
+  @HostListener('window:beforeunload', ['$event'])
+  handleBeforeUnload(event: any) {
+    const userId = sessionStorage.getItem('userId');
+    if (userId) {
+      navigator.sendBeacon(
+        '/api/user-status-offline', 
+        JSON.stringify({ userId }) 
+      );
+
+      // OR fallback (not reliable always)
       this.userService.updateUserStatus(userId, 'offline');
-    });
+    }
   }
 }

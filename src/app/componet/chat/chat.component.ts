@@ -36,6 +36,12 @@ export class ChatComponent {
   pressDuration = 800;
   showUnsendModal = false;
   messageToUnsend: any = null;
+  groupedMessages: { date: string, messages: any[] }[] = [];
+  groupedMessageKeys: string[] = [];
+  replyToMessage: any = null;
+  touchStartX: number = 0;
+  touchEndX: number = 0;
+
 
   constructor(
     private route: ActivatedRoute,
@@ -84,12 +90,48 @@ export class ChatComponent {
     this.subscription = this.chatService
       .getMessages(this.currentUserId, this.selectedUserId)
       .subscribe(async msgs => {
-        this.messages = msgs;
+        const grouped = this.groupMessagesByDate(msgs);
+        this.groupedMessages = grouped;
         this.scrollToBottom();
 
         await this.chatService.markMessagesAsRead(this.selectedUserId, this.currentUserId);
       });
   }
+
+  groupMessagesByDate(messages: any[]): { date: string, messages: any[] }[] {
+    const groupedMap = new Map<string, any[]>();
+
+    const now = new Date();
+    const today = now.toDateString();
+    const yesterday = new Date(now.setDate(now.getDate() - 1)).toDateString();
+
+    for (let msg of messages) {
+      const msgDate = new Date(msg.timestamp?.seconds * 1000).toDateString();
+
+      let key = '';
+      if (msgDate === today) {
+        key = 'Today';
+      } else if (msgDate === yesterday) {
+        key = 'Yesterday';
+      } else {
+        const dateObj = new Date(msg.timestamp?.seconds * 1000);
+        key = `${dateObj.getDate().toString().padStart(2, '0')}-${(dateObj.getMonth() + 1).toString().padStart(2, '0')}-${dateObj.getFullYear()}`;
+      }
+
+      if (!groupedMap.has(key)) {
+        groupedMap.set(key, []);
+      }
+      groupedMap.get(key)!.push(msg);
+    }
+
+    const result = [];
+    for (let [date, msgs] of groupedMap.entries()) {
+      result.push({ date, messages: msgs });
+    }
+
+    return result;
+  }
+
 
 
   ngOnDestroy(): void {
@@ -112,16 +154,38 @@ export class ChatComponent {
     const trimmed = this.newMessage.trim();
     if (!trimmed) return;
 
-    this.chatService
-      .sendMessage(this.currentUserId, this.selectedUserId, trimmed)
+    const messagePayload = {
+      from: this.currentUserId,
+      to: this.selectedUserId,
+      content: trimmed,
+      timestamp: new Date(),
+      replyTo: this.replyToMessage ? {
+        content: this.replyToMessage.content,
+        from: this.replyToMessage.from,
+        timestamp: this.replyToMessage.timestamp,
+      } : null
+    };
+
+    this.chatService.sendMessage(this.currentUserId, this.selectedUserId, messagePayload)
       .then(() => {
         this.newMessage = '';
+        this.replyToMessage = null;
       })
       .catch(err => {
         console.error(err);
         alert(err);
       });
   }
+
+  setReplyTo(msg: any) {
+    this.replyToMessage = msg;
+  }
+
+  cancelReply() {
+    this.replyToMessage = null;
+  }
+
+
 
   sendImage(event: any) {
     const file: File = event.target.files[0];
@@ -345,6 +409,32 @@ export class ChatComponent {
       console.error('Date parsing failed:', timestamp, error);
       return '';
     }
+  }
+
+  enlargeImage(url: string) {
+    window.open(url, '_blank');
+  }
+
+  handleTouchStart(event: TouchEvent) {
+    this.touchStartX = event.changedTouches[0].screenX;
+  }
+
+  handleTouchMove(event: TouchEvent, msg: any) {
+    this.touchEndX = event.changedTouches[0].screenX;
+
+    if (this.touchEndX - this.touchStartX > 100 && msg.from !== this.currentUserId) {
+      this.setReplyTo(msg);
+
+      const target = event.target as HTMLElement;
+      target.classList.add('swipe-reply');  // ✅ no TS error now
+    }
+  }
+
+
+
+  handleTouchEnd() {
+    this.touchStartX = 0;
+    this.touchEndX = 0;
   }
 
 }

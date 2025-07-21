@@ -12,8 +12,7 @@ export class ChatService {
     return userA < userB ? `${userA}_${userB}` : `${userB}_${userA}`;
   }
 
-  sendMessage(fromId: string, toId: string, content?: string, image?: string): Promise<any> {
-    // Check if recipient blocked sender
+  sendMessage(fromId: string, toId: string, content?: string | any, image?: string): Promise<any> {
     const blockedRef = collection(this.firestore, 'blockedUsers');
     const blockQuery = query(blockedRef, where('blockedUserId', '==', fromId), where('userId', '==', toId));
 
@@ -25,19 +24,25 @@ export class ChatService {
       const chatId = this.generateChatId(fromId, toId);
       const messagesRef = collection(this.firestore, `chats/${chatId}/messages`);
 
-      const msgData: any = {
+      let msgData: any = {
         from: fromId,
         to: toId,
         timestamp: serverTimestamp(),
-        read: false
+        read: false,
       };
 
-      if (content) msgData.content = content;
+      if (typeof content === 'string') {
+        msgData.content = content;
+      } else if (typeof content === 'object') {
+        msgData = { ...msgData, ...content };
+      }
+
       if (image) msgData.image = image;
 
       return addDoc(messagesRef, msgData);
     });
   }
+
 
   getMessages(fromId: string, toId: string): Observable<any[]> {
     const chatId = this.generateChatId(fromId, toId);

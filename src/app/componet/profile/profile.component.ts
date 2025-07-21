@@ -36,10 +36,19 @@ export class ProfileComponent {
   }
 
   logout() {
-    sessionStorage.removeItem("userId");
-    this.userService.setUserData(null); // 🔥 Clear cached user data
-    this.router.navigate(['/login'], { replaceUrl: true });
+    if (this.user && this.user.id) {
+      this.userService.updateUserStatus(this.user.id, 'offline').then(() => {
+        sessionStorage.removeItem("userId");
+        this.userService.setUserData(null);
+        this.router.navigate(['/login'], { replaceUrl: true });
+      });
+    } else {
+      sessionStorage.removeItem("userId");
+      this.userService.setUserData(null);
+      this.router.navigate(['/login'], { replaceUrl: true });
+    }
   }
+
 
 
   goBack() {
