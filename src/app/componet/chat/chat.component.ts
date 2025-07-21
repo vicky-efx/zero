@@ -21,17 +21,9 @@ export class ChatComponent {
   currentUserId = '';
   selectedUserId = '';
   userName: string = '';
-  menuOpen = false;
-  isBlocked = false;
-  isCleared = false;
   chatId = '';
-  showEmojiPicker = false;
-  emojiPickerRef!: ElementRef;
-  menuRef!: ElementRef;
   userStatusText: string = '';
   statusColor = '';
-  selectedImageUrl: string | null = null;
-  showImageModal = false;
   pressTimer: any;
   pressDuration = 800;
   showUnsendModal = false;
@@ -57,28 +49,29 @@ export class ChatComponent {
     this.selectedUserId = this.route.snapshot.paramMap.get('id') || '';
     this.chatId = this.chatService.generateChatId(this.currentUserId, this.selectedUserId);
 
-    this.userService.getUserById(this.selectedUserId).subscribe(user => {
-      this.userName = user?.name || 'Unknown';
+    this.messages = []; // Initialize before loading messages
 
-      if (user?.status === 'online') {
-        this.userStatusText = 'online';
-        this.statusColor = '#138f53';
+    this.userService.getUserById(this.selectedUserId).subscribe(user => {
+      if (user) {
+        this.userName = user.name || 'Unknown';
+
+        if (user.status === 'online') {
+          this.userStatusText = 'online';
+          this.statusColor = '#138f53';
+        } else {
+          this.userStatusText = this.formatLastSeen(user.lastSeen);
+          this.statusColor = 'black';
+        }
       } else {
-        this.userStatusText = this.formatLastSeen(user?.lastSeen);
+        this.userName = 'Unknown';
+        this.userStatusText = 'offline';
         this.statusColor = 'black';
       }
     });
 
-    this.chatService.isChatCleared(this.currentUserId, this.chatId).then(cleared => {
-      this.isCleared = cleared;
-
-      if (!cleared) {
-        this.loadMessages();
-      } else {
-        this.messages = [];
-      }
-    });
+    this.loadMessages(); 
   }
+
 
   loadMessages() {
     this.subscription = this.chatService
@@ -234,13 +227,7 @@ export class ChatComponent {
       });
   }
 
-  // extractVideoCallPath(content: string): string {
-  //   const match = content.match(/\/video-call\/[a-zA-Z0-9_\-]+/);
-  //   return match ? match[0] : '/';
-  // }
-
   startPress(message: any) {
-    // Only allow long press on your own non-unsent messages
     if (message.from !== this.currentUserId || message.unsent) return;
 
     this.pressTimer = setTimeout(() => {
@@ -250,23 +237,21 @@ export class ChatComponent {
   }
 
   cancelPress() {
-    clearTimeout(this.pressTimer);
+    if (this.pressTimer) {
+      clearTimeout(this.pressTimer);
+      this.pressTimer = null;
+    }
+  }
+
+  unsendConfirmed() {
+    if (this.messageToUnsend) {
+      this.messageToUnsend.unsent = true;
+      this.showUnsendModal = false;
+    }
   }
 
   closeUnsendModal() {
     this.showUnsendModal = false;
-    this.messageToUnsend = null;
-  }
-
-  unsendConfirmed() {
-    if (!this.messageToUnsend) return;
-
-    this.chatService.unsendMessage(this.chatId, this.messageToUnsend).then(() => {
-      this.closeUnsendModal();
-    }).catch(err => {
-      console.error("Unsend failed", err);
-      this.closeUnsendModal();
-    });
   }
 
   handleTouchStart(event: TouchEvent) {
