@@ -47,29 +47,13 @@
     .chat-left {
       display: flex;
       align-items: center;
-      flex: 1.5;
       gap: 10px;
 
       .chat-avatar {
-        position: relative;
-
-        img {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          object-fit: cover;
-        }
-
-        .status-dot {
-          position: absolute;
-          bottom: 0;
-          right: 0;
-          width: 10px;
-          height: 10px;
-          background-color: #4caf50;
-          border: 2px solid #fff;
-          border-radius: 50%;
-        }
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        flex-shrink: 0;
       }
 
       .chat-info {
@@ -77,24 +61,27 @@
         flex-direction: column;
         align-items: flex-start;
         min-width: 0;
+        max-width: 140px; // adjust as needed for name+status to fit
+        overflow: hidden;
 
         .chat-name {
           font-weight: 600;
           font-size: 15px;
           white-space: nowrap;
-          overflow: hidden;
           text-overflow: ellipsis;
-          max-width: 100%;
+          overflow: hidden;
         }
 
         .chat-status-text {
           font-size: 12px;
           color: #138f53;
-          word-wrap: break-word;
-          max-width: 100%;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          overflow: hidden;
         }
       }
     }
+
 
     .chat-center {
       flex: 2;
@@ -167,33 +154,41 @@
   }
 }
 
-@media (max-width: 768px) {
-  .chat-item {
-    flex-direction: row;
-    align-items: center;
+// @media (max-width: 768px) {
+//   .chat-item {
+//     flex-direction: row;
+//     align-items: center;
 
-    .chat-left {
-      flex: 2;
+//     .chat-left {
+//       flex: 2;
 
-      .chat-info {
-        max-width: 120px; // or auto depending on your design
-      }
-    }
+//       .chat-info {
+//         max-width: 120px; // or auto depending on your design
+//       }
+//     }
 
-    .chat-center {
-      flex: 1.5;
+//     .chat-center {
+//       flex: 1.5;
 
-      .last-message {
-        font-size: 13px;
-      }
-    }
+//       .last-message {
+//         font-size: 13px;
+//       }
+//     }
 
-    .chat-right {
-      flex: 0.5;
+//     .chat-right {
+//       flex: 0.5;
 
-      .chat-time {
-        font-size: 11px;
-      }
+//       .chat-time {
+//         font-size: 11px;
+//       }
+//     }
+//   }
+// }
+
+@media (max-width: 600px) {
+  .chat-left {
+    .chat-info {
+      max-width: 100px;
     }
   }
 }
