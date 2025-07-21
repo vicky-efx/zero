@@ -33,7 +33,8 @@ export class ChatComponent {
   replyToMessage: any = null;
   touchStartX: number = 0;
   touchEndX: number = 0;
-
+  mouseStartX: number = 0;
+  mouseSwiped: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -69,7 +70,7 @@ export class ChatComponent {
       }
     });
 
-    this.loadMessages(); 
+    this.loadMessages();
   }
 
 
@@ -162,14 +163,6 @@ export class ChatComponent {
       });
   }
 
-  setReplyTo(msg: any) {
-    this.replyToMessage = msg;
-  }
-
-  cancelReply() {
-    this.replyToMessage = null;
-  }
-
   goBack(): void {
     this.router.navigate(['/user-list']);
   }
@@ -254,41 +247,84 @@ export class ChatComponent {
     this.showUnsendModal = false;
   }
 
-  handleTouchStart(event: TouchEvent) {
+  onMouseDown(event: MouseEvent, msg: any) {
+    this.mouseStartX = event.clientX;
+    this.mouseSwiped = false;
+  }
+
+  onMouseMove(event: MouseEvent, msg: any) {
+    if (this.mouseStartX === 0) return;
+
+    const currentX = event.clientX;
+    const diff = currentX - this.mouseStartX;
+
+    if (Math.abs(diff) > 80 && !this.mouseSwiped) {
+      this.mouseSwiped = true;
+
+      if (diff > 0 && msg.from !== this.currentUserId) {
+        this.setReplyTo(msg); // swipe right to reply for "them"
+      }
+
+      if (diff < 0 && msg.from === this.currentUserId) {
+        this.setReplyTo(msg); // swipe left to reply for "me"
+      }
+
+      const target = (event.target as HTMLElement).closest('.message');
+      if (target) {
+        target.classList.add('swipe-reply');
+        setTimeout(() => target.classList.remove('swipe-reply'), 600);
+      }
+    }
+  }
+
+  onMouseUp(msg: any) {
+    this.mouseStartX = 0;
+  }
+
+  cancelSwipe() {
+    this.mouseStartX = 0;
+  }
+
+
+  setReplyTo(msg: any) {
+    this.replyToMessage = msg;
+  }
+
+  cancelReply() {
+    this.replyToMessage = null;
+  }
+
+  onTouchStart(event: TouchEvent) {
     this.touchStartX = event.changedTouches[0].screenX;
   }
 
-  handleTouchMove(event: TouchEvent, msg: any) {
+  onTouchMove(event: TouchEvent, msg: any) {
     this.touchEndX = event.changedTouches[0].screenX;
     const diff = this.touchEndX - this.touchStartX;
 
-    // Swipe right for incoming messages
-    if (diff > 100 && msg.from !== this.currentUserId) {
-      this.setReplyTo(msg);
-    }
+    if (Math.abs(diff) > 80) {
+      if (diff > 0 && msg.from !== this.currentUserId) {
+        this.setReplyTo(msg);
+      }
 
-    // Swipe left for your own messages
-    if (diff < -100 && msg.from === this.currentUserId) {
-      this.setReplyTo(msg);
-    }
+      if (diff < 0 && msg.from === this.currentUserId) {
+        this.setReplyTo(msg);
+      }
 
-    // Highlight swipe visually
-    const target = (event.target as HTMLElement).closest('.message');
-    if (target) {
-      target.classList.add('swipe-reply');
+      const target = (event.target as HTMLElement).closest('.message');
+      if (target) {
+        target.classList.add('swipe-reply');
+        setTimeout(() => target.classList.remove('swipe-reply'), 600);
+      }
 
-      // Remove the class after a short delay (optional)
-      setTimeout(() => {
-        target.classList.remove('swipe-reply');
-      }, 600);
+      this.touchStartX = 0;
+      this.touchEndX = 0;
     }
   }
 
-
-  handleTouchEnd() {
+  onTouchEnd(msg: any) {
     this.touchStartX = 0;
     this.touchEndX = 0;
   }
-
 
 }

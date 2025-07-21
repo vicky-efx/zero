@@ -33,9 +33,13 @@
             <!-- Message Container -->
             <div *ngFor="let msg of group.messages"
                 [ngClass]="{ 'message': true, 'me': msg.from === currentUserId, 'them': msg.from !== currentUserId }"
-                (mousedown)="msg.from === currentUserId ? startPress(msg) : null" (mouseup)="cancelPress()"
-                (mouseleave)="cancelPress()" (touchstart)="msg.from === currentUserId ? startPress(msg) : null"
-                (touchend)="cancelPress()" (touchmove)="cancelPress()">
+                (mousedown)="onMouseDown($event, msg)" (mousemove)="onMouseMove($event, msg)" (mouseup)="onMouseUp(msg)"
+                (mouseleave)="cancelSwipe()" (touchstart)="onTouchStart($event)" (touchmove)="onTouchMove($event, msg)"
+                (touchend)="onTouchEnd(msg)" (mousedown.right)="msg.from === currentUserId ? startPress(msg) : null"
+                (mouseup.right)="cancelPress()" (mouseleave)="cancelPress()"
+                (touchstart)="msg.from === currentUserId ? startPress(msg) : null" (touchend)="cancelPress()"
+                (touchmove)="cancelPress()">
+
 
                 <!-- Reply box -->
                 <div *ngIf="msg.replyTo" class="reply-box">
