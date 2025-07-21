@@ -1,50 +1,42 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { VideoCallService } from '../../services/video-call.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import {  Component,   OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Firestore, onSnapshot } from 'firebase/firestore';
-
+import { ActivatedRoute } from '@angular/router';
+import { SignalingService } from '../../services/signaling.service';
 @Component({
   selector: 'app-video-call',
   imports: [CommonModule],
   templateUrl: './video-call.component.html',
   styleUrl: './video-call.component.scss'
 })
-export class VideoCallComponent implements OnInit, OnDestroy {
-  @ViewChild('localVideo') localVideo!: ElementRef<HTMLVideoElement>;
-  @ViewChild('remoteVideo') remoteVideo!: ElementRef<HTMLVideoElement>;
+export class VideoCallComponent implements OnInit  {
+  roomId!: string;
+  localVideo!: HTMLVideoElement;
+  remoteVideo!: HTMLVideoElement;
 
-  roomId: string = '';
-  currentUserId: string = '';
-  remoteUserId: string = '';
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-  ) { }
-  ngOnDestroy(): void {
-    throw new Error('Method not implemented.');
-  }
+  constructor(private route: ActivatedRoute, private signalingService: SignalingService) { }
 
   ngOnInit(): void {
-    // Get room ID from route
-    this.roomId = this.route.snapshot.paramMap.get('roomId') || '';
+    this.roomId = this.route.snapshot.paramMap.get('roomId')!;
+    this.localVideo = document.getElementById('localVideo') as HTMLVideoElement;
+    this.remoteVideo = document.getElementById('remoteVideo') as HTMLVideoElement;
 
-    // Parse current user ID from roomId (e.g., "12_abcdxy")
-    const [userId] = this.roomId.split('_');
-    this.currentUserId = userId;
+    if (location.pathname.includes('join')) {
+      this.joinCall();
+    } else {
+      this.startCall();
+    }
   }
 
-  ngAfterViewInit(): void {
-    // Now you can use localVideo.nativeElement safely
-    console.log('Video call started by user:', this.currentUserId);
-    console.log('Room ID:', this.roomId);
-
-    // Connect to Firebase/WebRTC here
+  async startCall() {
+    const { localStream, remoteStream } = await this.signalingService.createRoom(this.roomId);
+    this.localVideo.srcObject = localStream;
+    this.remoteVideo.srcObject = remoteStream;
   }
 
-  leaveRoom() {
-    // Leave room logic
-    this.router.navigate(['/chat', this.remoteUserId || this.currentUserId]);
+  async joinCall() {
+    const { localStream, remoteStream } = await this.signalingService.joinRoom(this.roomId);
+    this.localVideo.srcObject = localStream;
+    this.remoteVideo.srcObject = remoteStream;
   }
+
 }

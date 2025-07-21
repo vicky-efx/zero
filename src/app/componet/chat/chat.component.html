@@ -33,49 +33,53 @@
             <!-- Message Container -->
             <div *ngFor="let msg of group.messages"
                 [ngClass]="{ 'message': true, 'me': msg.from === currentUserId, 'them': msg.from !== currentUserId }"
-                (mousedown)="onMouseDown($event, msg)" (mousemove)="onMouseMove($event, msg)" (mouseup)="onMouseUp(msg)"
-                (mouseleave)="cancelSwipe()" (touchstart)="onTouchStart($event)" (touchmove)="onTouchMove($event, msg)"
-                (touchend)="onTouchEnd(msg)" (mousedown.right)="msg.from === currentUserId ? startPress(msg) : null"
-                (mouseup.right)="cancelPress()" (mouseleave)="cancelPress()"
-                (touchstart)="msg.from === currentUserId ? startPress(msg) : null" (touchend)="cancelPress()"
-                (touchmove)="cancelPress()">
+                [class.unsent]="msg.unsent" (mousedown)="onMouseDown($event, msg)"
+                (mousemove)="onMouseMove($event, msg)" (mouseup)="onMouseUp(msg)" (mouseleave)="cancelSwipe()"
+                (touchstart)="onTouchStart($event)" (touchmove)="onTouchMove($event, msg)" (touchend)="onTouchEnd(msg)"
+                (mousedown.right)="msg.from === currentUserId ? startPress(msg) : null" (mouseup.right)="cancelPress()"
+                (mouseleave)="cancelPress()" (touchstart)="msg.from === currentUserId ? startPress(msg) : null"
+                (touchend)="cancelPress()" (touchmove)="cancelPress()">
 
+                <!-- Deleted Message Display -->
+                <ng-container *ngIf="msg.unsent; else normalContent">
+                    <div class="deleted-message"
+                        style="font-style: italic; font-family: 'Source Code Pro', 'Segoe UI', sans-serif;  ">This
+                        message was deleted</div>
+                </ng-container>
 
-                <!-- Reply box -->
-                <div *ngIf="msg.replyTo" class="reply-box">
-                    <div class="reply-from">{{ msg.replyTo.from === currentUserId ? 'You' : 'Them' }}</div>
-                    <div class="reply-content">{{ msg.replyTo.content }}</div>
-                </div>
+                <ng-template #normalContent>
+                    <!-- Reply box -->
+                    <div *ngIf="msg.replyTo && !msg.unsent" class="reply-box">
+                        <div class="reply-from">{{ msg.replyTo.from === currentUserId ? 'You' : 'Them' }}</div>
+                        <div class="reply-content">{{ msg.replyTo.content }}</div>
+                    </div>
 
-                <!-- Normal content -->
-                <div *ngIf="msg.content">
-                    <ng-container *ngIf="msg.content.includes('/video-call/'); else normalMessage">
-                        <a [routerLink]="msg.content" class="video-call-link" target="_blank">
-                            <i class="fa fa-video-camera"></i> Join Video Call
-                        </a>
-                    </ng-container>
+                    <!-- Normal or Link content -->
+                    <div *ngIf="msg.content">
+                        <ng-container *ngIf="msg.content.includes('/video-call/'); else normalMessage">
+                            <a [routerLink]="[msg.content]" [queryParams]="{ userId: currentUserId }"
+                                class="video-call-link">
+                                <i class="fa fa-video-camera"></i> Join Video Call
+                            </a>
+                        </ng-container>
 
-                    <ng-template #normalMessage>
-                        <span class="text-content">{{ msg.content }}</span>
-                        <div class="message-meta">
-                            <span class="timestamp">
-                                {{ formatTimestamp(msg.timestamp) }}
-                                <ng-container *ngIf="msg.from === currentUserId">
-                                    <i class="checkmark" [ngClass]="{ 'seen': msg.read }">
-                                        {{ msg.read ? 'Seen' : '✓' }}
-                                    </i>
-                                </ng-container>
-                            </span>
-                        </div>
-                    </ng-template>
-                </div>
-
-                <!-- Images & Videos -->
-                <video *ngIf="msg.videoUrl" controls class="video-message">
-                    <source [src]="msg.videoUrl" type="video/mp4" />
-                    Your browser does not support the video tag.
-                </video>
+                        <ng-template #normalMessage>
+                            <span class="text-content">{{ msg.content }}</span>
+                            <div class="message-meta">
+                                <span class="timestamp">
+                                    {{ formatTimestamp(msg.timestamp) }}
+                                    <ng-container *ngIf="msg.from === currentUserId">
+                                        <i class="checkmark" [ngClass]="{ 'seen': msg.read }">
+                                            {{ msg.read ? 'Seen' : '✓' }}
+                                        </i>
+                                    </ng-container>
+                                </span>
+                            </div>
+                        </ng-template>
+                    </div>
+                </ng-template>
             </div>
+
 
         </ng-container>
     </div>

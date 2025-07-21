@@ -64,64 +64,6 @@ export class ChatService {
     );
   }
 
-  clearChat(userId: string, chatId: string): Promise<void> {
-    const clearedRef = collection(this.firestore, 'clearedChats');
-    return addDoc(clearedRef, {
-      userId,
-      chatId,
-      timestamp: new Date(),
-    }).then(() => { });
-  }
-
-  restoreChat(userId: string, chatId: string): Promise<void> {
-    const clearedRef = collection(this.firestore, 'clearedChats');
-    const q = query(clearedRef, where('userId', '==', userId), where('chatId', '==', chatId));
-
-    return getDocs(q).then(snapshot => {
-      const batch = writeBatch(this.firestore);
-      snapshot.forEach(docSnap => {
-        batch.delete(doc(this.firestore, 'clearedChats', docSnap.id));
-      });
-      return batch.commit();
-    });
-  }
-
-  isChatCleared(userId: string, chatId: string): Promise<boolean> {
-    const clearedRef = collection(this.firestore, 'clearedChats');
-    const q = query(clearedRef, where('userId', '==', userId), where('chatId', '==', chatId));
-
-    return getDocs(q).then(snapshot => !snapshot.empty);
-  }
-
-  blockUser(currentUserId: string, otherUserId: string): Promise<void> {
-    const blockedRef = collection(this.firestore, 'blockedUsers');
-    return addDoc(blockedRef, {
-      userId: currentUserId,
-      blockedUserId: otherUserId,
-      timestamp: new Date(),
-    }).then(() => { });
-  }
-
-  unblockUser(currentUserId: string, otherUserId: string): Promise<void> {
-    const blockedRef = collection(this.firestore, 'blockedUsers');
-    const q = query(blockedRef, where('userId', '==', currentUserId), where('blockedUserId', '==', otherUserId));
-
-    return getDocs(q).then(snapshot => {
-      const batch = writeBatch(this.firestore);
-      snapshot.forEach(docSnap => {
-        batch.delete(doc(this.firestore, 'blockedUsers', docSnap.id));
-      });
-      return batch.commit();
-    });
-  }
-
-  isUserBlocked(currentUserId: string, otherUserId: string): Promise<boolean> {
-    const blockedRef = collection(this.firestore, 'blockedUsers');
-    const q = query(blockedRef, where('userId', '==', currentUserId), where('blockedUserId', '==', otherUserId));
-
-    return getDocs(q).then(snapshot => !snapshot.empty);
-  }
-
   async markMessagesAsRead(senderId: string, receiverId: string): Promise<void> {
     const chatId = this.generateChatId(senderId, receiverId);
     const messagesRef = collection(this.firestore, `chats/${chatId}/messages`);

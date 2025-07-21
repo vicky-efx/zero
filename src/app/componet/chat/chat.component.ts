@@ -73,7 +73,6 @@ export class ChatComponent {
     this.loadMessages();
   }
 
-
   loadMessages() {
     this.subscription = this.chatService
       .getMessages(this.currentUserId, this.selectedUserId)
@@ -200,8 +199,8 @@ export class ChatComponent {
   }
 
   sendMeetInvite() {
-    const randomPart = Math.random().toString(36).substring(2, 8); // e.g., "4kz8fe"
-    const roomId = `${this.currentUserId}_${randomPart}`;          // e.g., "12_4kz8fe"
+    const randomPart = Math.random().toString(36).substring(2, 8);
+    const roomId = `${randomPart}`;
     const meetLink = `/video-call/${roomId}`;
 
     const message = {
@@ -226,7 +225,7 @@ export class ChatComponent {
     this.pressTimer = setTimeout(() => {
       this.messageToUnsend = message;
       this.showUnsendModal = true;
-    }, 600); // 600ms = long press
+    }, 600);
   }
 
   cancelPress() {
@@ -240,6 +239,14 @@ export class ChatComponent {
     if (this.messageToUnsend) {
       this.messageToUnsend.unsent = true;
       this.showUnsendModal = false;
+
+      const fromId = this.messageToUnsend.from;
+      const toId = this.messageToUnsend.to;
+      const chatId = this.chatService.generateChatId(fromId, toId);
+
+      this.chatService.unsendMessage(chatId, this.messageToUnsend)
+        .then(() => console.log('Message unsent in Firestore'))
+        .catch((err) => console.error('Failed to unsend message:', err));
     }
   }
 
@@ -284,7 +291,6 @@ export class ChatComponent {
   cancelSwipe() {
     this.mouseStartX = 0;
   }
-
 
   setReplyTo(msg: any) {
     this.replyToMessage = msg;
