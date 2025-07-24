@@ -7,6 +7,7 @@ import { ChatService } from '../../services/chat.service';
 import { Subscription } from 'rxjs';
 import { PickerModule } from '@ctrl/ngx-emoji-mart';
 import { format, isToday, isYesterday, isThisWeek, differenceInCalendarDays } from 'date-fns';
+import { SignalingService } from '../../services/signaling.service';
 
 @Component({
   selector: 'app-chat',
@@ -40,8 +41,8 @@ export class ChatComponent {
     private route: ActivatedRoute,
     private router: Router,
     private chatService: ChatService,
-    private userService: UserService
-  ) { }
+    private userService: UserService,
+    private signaling: SignalingService,) { }
 
   @ViewChild('messageList') messageList!: ElementRef;
 
@@ -139,11 +140,15 @@ export class ChatComponent {
     const trimmed = this.newMessage.trim();
     if (!trimmed) return;
 
+    // Optional: Detect if it's a video call message
+    const isMeetInvite = trimmed.startsWith('📹 Join my video call');
+
     const messagePayload = {
       from: this.currentUserId,
       to: this.selectedUserId,
       content: trimmed,
       timestamp: new Date(),
+      type: isMeetInvite ? 'video' : 'text',  // Optional: for message type handling
       replyTo: this.replyToMessage ? {
         content: this.replyToMessage.content,
         from: this.replyToMessage.from,
@@ -161,6 +166,7 @@ export class ChatComponent {
         alert(err);
       });
   }
+
 
   goBack(): void {
     this.router.navigate(['/user-list']);
@@ -198,26 +204,26 @@ export class ChatComponent {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
-  sendMeetInvite() {
-    const randomPart = Math.random().toString(36).substring(2, 8);
-    const roomId = `${randomPart}`;
+  async sendMeetInvite() {
+    const roomId = 'room-' + Date.now();
+    const { localStream, remoteStream } = await this.signaling.createRoom(roomId);
+
     const meetLink = `/video-call/${roomId}`;
+    const inviteMessage = `📹 Join my video call: <a href="${meetLink}">${meetLink}</a>`;
 
-    const message = {
-      from: this.currentUserId,
-      to: this.selectedUserId,
-      content: meetLink,
-      timestamp: new Date().toISOString()
-    };
+    this.newMessage = inviteMessage;
+    this.sendMessage();
 
-    this.chatService.sendMessage(this.currentUserId, this.selectedUserId, meetLink)
-      .then(() => {
-        console.log("Meet invite sent:", meetLink);
-      })
-      .catch(err => {
-        console.error("Error sending invite:", err);
-      });
+    this.router.navigate([meetLink]);
   }
+
+  joinVideoCall(content: string) {
+    const roomId = content.split('/video-call/')[1];
+    if (roomId) {
+      this.router.navigate(['/video-call', roomId]);
+    }
+  }
+
 
   startPress(message: any) {
     if (message.from !== this.currentUserId || message.unsent) return;

@@ -11,6 +11,9 @@ import { isPlatformBrowser } from '@angular/common';
 })
 export class AppComponent {
   title = 'ZeroChat';
+  private userId: string | null = null;
+  private offlineTimeout: any;
+
   constructor(
     private userService: UserService,
     private router: Router,
@@ -20,28 +23,56 @@ export class AppComponent {
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
 
-    const userId = sessionStorage.getItem('userId');
+    this.userId = sessionStorage.getItem('userId');
 
-    if (!userId) {
+    if (!this.userId) {
       console.warn('No user ID found in session!');
       this.router.navigate(['/login']);
       return;
     }
 
-    this.userService.updateUserStatus(userId, 'online');
+    // Set user online on load
+    this.userService.updateUserStatus(this.userId, 'online');
+
+    // Detect tab visibility change (optional for advanced control)
+    document.addEventListener('visibilitychange', this.handleVisibilityChange);
+    window.addEventListener('offline', this.setOffline);
+  }
+
+  ngOnDestroy(): void {
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+    window.removeEventListener('offline', this.setOffline);
   }
 
   @HostListener('window:beforeunload', ['$event'])
   handleBeforeUnload(event: any) {
-    const userId = sessionStorage.getItem('userId');
-    if (userId) {
+    if (this.userId) {
       navigator.sendBeacon(
-        '/api/user-status-offline', 
-        JSON.stringify({ userId }) 
+        '/api/user-status-offline',
+        JSON.stringify({ userId: this.userId })
       );
-
-      // OR fallback (not reliable always)
-      this.userService.updateUserStatus(userId, 'offline');
+      this.userService.updateUserStatus(this.userId, 'offline');
     }
   }
+
+  handleVisibilityChange = () => {
+    if (!this.userId) return;
+
+    if (document.visibilityState === 'hidden') {
+      // User switched tab or minimized
+      this.offlineTimeout = setTimeout(() => {
+        this.userService.updateUserStatus(this.userId!, 'offline');
+      }, 10000); // Wait 10 sec before setting offline (optional buffer)
+    } else {
+      // Back to tab
+      clearTimeout(this.offlineTimeout);
+      this.userService.updateUserStatus(this.userId, 'online');
+    }
+  };
+
+  setOffline = () => {
+    if (this.userId) {
+      this.userService.updateUserStatus(this.userId, 'offline');
+    }
+  };
 }

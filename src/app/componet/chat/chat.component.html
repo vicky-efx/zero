@@ -57,11 +57,16 @@
                     <!-- Normal or Link content -->
                     <div *ngIf="msg.content">
                         <ng-container *ngIf="msg.content.includes('/video-call/'); else normalMessage">
-                            <a [routerLink]="[msg.content]" [queryParams]="{ userId: currentUserId }"
-                                class="video-call-link">
+                            <a (click)="joinVideoCall(msg.content)" class="video-call-link" style="color: blue; cursor: pointer;">
                                 <i class="fa fa-video-camera"></i> Join Video Call
                             </a>
                         </ng-container>
+
+                        <ng-template #normalMessage>
+                            <!-- fallback normal message display -->
+                            <div class="chat-message">{{ msg.content }}</div>
+                        </ng-template>
+
 
                         <ng-template #normalMessage>
                             <span class="text-content">{{ msg.content }}</span>

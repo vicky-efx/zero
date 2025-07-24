@@ -1,6 +1,6 @@
-import {  Component,   OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { SignalingService } from '../../services/signaling.service';
 @Component({
   selector: 'app-video-call',
@@ -8,35 +8,46 @@ import { SignalingService } from '../../services/signaling.service';
   templateUrl: './video-call.component.html',
   styleUrl: './video-call.component.scss'
 })
-export class VideoCallComponent implements OnInit  {
-  roomId!: string;
-  localVideo!: HTMLVideoElement;
-  remoteVideo!: HTMLVideoElement;
+export class VideoCallComponent implements OnInit, OnDestroy {
+  @ViewChild('localVideo') localVideoRef!: ElementRef<HTMLVideoElement>;
+  @ViewChild('remoteVideo') remoteVideoRef!: ElementRef<HTMLVideoElement>;
+
+  roomId: string = '';
+  localStream!: MediaStream;
+  remoteStream!: MediaStream;
+  isMuted = false;
 
   constructor(private route: ActivatedRoute, private signalingService: SignalingService) { }
 
-  ngOnInit(): void {
-    this.roomId = this.route.snapshot.paramMap.get('roomId')!;
-    this.localVideo = document.getElementById('localVideo') as HTMLVideoElement;
-    this.remoteVideo = document.getElementById('remoteVideo') as HTMLVideoElement;
+  async ngOnInit() {
+    this.roomId = this.route.snapshot.paramMap.get('roomId') || '';
 
-    if (location.pathname.includes('join')) {
-      this.joinCall();
-    } else {
-      this.startCall();
+    try {
+      const { localStream, remoteStream } = await this.signalingService.joinRoom(this.roomId);
+      this.localStream = localStream;
+      this.remoteStream = remoteStream;
+      this.localVideoRef.nativeElement.srcObject = localStream;
+      this.remoteVideoRef.nativeElement.srcObject = remoteStream;
+    } catch (error) {
+      console.error('Error joining room:', error);
     }
   }
 
-  async startCall() {
-    const { localStream, remoteStream } = await this.signalingService.createRoom(this.roomId);
-    this.localVideo.srcObject = localStream;
-    this.remoteVideo.srcObject = remoteStream;
+  toggleMute() {
+    if (this.localStream) {
+      this.isMuted = !this.isMuted;
+      this.localStream.getAudioTracks().forEach(track => (track.enabled = !this.isMuted));
+    }
   }
 
-  async joinCall() {
-    const { localStream, remoteStream } = await this.signalingService.joinRoom(this.roomId);
-    this.localVideo.srcObject = localStream;
-    this.remoteVideo.srcObject = remoteStream;
+  leaveRoom() {
+    
+    if (this.localStream) this.localStream.getTracks().forEach(track => track.stop());
+    if (this.remoteStream) this.remoteStream.getTracks().forEach(track => track.stop());
+    window.close(); // or this.router.navigate(['/chat']);
   }
 
+  ngOnDestroy() {
+    this.leaveRoom();
+  }
 }
