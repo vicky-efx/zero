@@ -15,7 +15,7 @@ export class SignalingService {
     ]
   };
 
-  constructor(private firestore: Firestore) { }
+  constructor(public firestore: Firestore) { }
 
   async createRoom(roomId: string) {
     this.roomId = roomId;
