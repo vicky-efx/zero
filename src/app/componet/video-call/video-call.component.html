@@ -1,16 +1,8 @@
-<div class="meet-container">
-  <video #remoteVideo class="remote-video" autoplay playsinline></video>
-  <video #localVideo class="local-video" autoplay playsinline muted></video>
-
+<div class="video-call-container">
   <video #remoteVideo autoplay playsinline class="remote-video"></video>
-  <video #localVideo autoplay muted playsinline class="local-video"></video>
+  <video #localVideo autoplay playsinline muted class="local-video"></video>
 
-  <div class="control-bar">
-    <button class="control-btn mute-btn" (click)="toggleMute()">
-      <span *ngIf="isMuted">🔇</span>
-      <span *ngIf="!isMuted">🎤</span>
-    </button>
-
-    <button class="control-btn leave-btn" (click)="leaveRoom()">🚪 Leave</button>
+  <div class="controls">
+    <button (click)="hangUp()">❌ Hang Up</button>
   </div>
 </div>

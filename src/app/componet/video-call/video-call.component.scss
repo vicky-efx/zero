@@ -1,72 +1,35 @@
-.meet-container {
+.video-call-container {
   position: relative;
-  width: 100vw;
-  height: 100vh;
-  background-color: #000;
-  overflow: hidden;
-}
-
-.remote-video {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  position: absolute;
-  z-index: 1;
-}
+  height: 100vh;
+  background: black;
 
-.local-video {
-  width: 200px;
-  height: 150px;
-  position: absolute;
-  bottom: 100px;
-  right: 20px;
-  z-index: 2;
-  border-radius: 12px;
-  border: 2px solid #fff;
-  object-fit: cover;
-}
-
-.control-bar {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 20px;
-  z-index: 3;
-  background: rgba(0, 0, 0, 0.6);
-  padding: 12px 20px;
-  border-radius: 30px;
-}
-
-.control-btn {
-  font-size: 18px;
-  color: white;
-  background-color: rgba(255, 255, 255, 0.1);
-  border: none;
-  border-radius: 50%;
-  padding: 12px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.3);
+  .remote-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
-}
 
-.mute-btn {
-  font-size: 22px;
-}
+  .local-video {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 160px;
+    height: 120px;
+    border: 2px solid white;
+  }
 
-.leave-btn {
-  background-color: #d93025;
-  color: white;
-  border-radius: 30px;
-  padding: 10px 20px;
-  font-weight: bold;
-  transition: background-color 0.3s ease;
+  .controls {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
 
-  &:hover {
-    background-color: #a30000;
+    button {
+      background: red;
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+    }
   }
 }
