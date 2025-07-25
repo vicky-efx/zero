@@ -5,6 +5,7 @@ import { UserListComponent } from './componet/user-list/user-list.component';
 import { ProfileComponent } from './componet/profile/profile.component';
 import { ChatComponent } from './componet/chat/chat.component';
 import { VideoCallComponent } from './componet/video-call/video-call.component';
+import { AudiocallComponent } from './componet/audiocall/audiocall.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -14,5 +15,6 @@ export const routes: Routes = [
     { path: 'chat/:id', component: ChatComponent },
     { path: 'profile', component: ProfileComponent },
     { path: 'video-call/:roomId', component: VideoCallComponent },
+    { path: 'audio-call/:roomId', component: AudiocallComponent },
     { path: '**', redirectTo: '' }
 ];

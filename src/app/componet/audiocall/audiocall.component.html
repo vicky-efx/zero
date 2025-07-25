@@ -1,0 +1,20 @@
+<div class="call-container">
+    <h2>🗣️ Audio Call Room: {{ roomId }}</h2>
+    <p>Status: {{ callStatus }}</p>
+    <p *ngIf="callDuration">⏱️ Duration: {{ callDuration }} sec</p>
+
+    <div class="audio-section">
+        <audio #localAudio autoplay controls></audio>
+        <audio #remoteAudio autoplay controls></audio>
+    </div>
+
+    <div class="controls">
+        <button (click)="toggleMic()">
+            {{ micEnabled ? '🔇 Mute Mic' : '🎙️ Unmute Mic' }}
+        </button>
+
+        <button (click)="hangUp()" class="hangup">
+            🛑 Hang Up
+        </button>
+    </div>
+</div>

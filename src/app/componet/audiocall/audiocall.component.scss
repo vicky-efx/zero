@@ -1,0 +1,61 @@
+.call-container {
+  padding: 2rem;
+  text-align: center;
+  font-family: 'Segoe UI', sans-serif;
+  color: #fff;
+  background: linear-gradient(to right, #141e30, #243b55);
+  min-height: 100vh;
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  p {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+  }
+
+  .audio-section {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+
+    audio {
+      width: 45%;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #000;
+    }
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+
+      audio {
+        width: 100%;
+      }
+    }
+  }
+
+  .controls {
+    margin-top: 2rem;
+
+    button {
+      background-color: #4fc3f7;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 1rem;
+      margin: 0 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .hangup {
+      background-color: #ef5350;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+  }
+}

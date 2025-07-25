@@ -6,8 +6,9 @@ import { UserService } from '../../services/user.service';
 import { ChatService } from '../../services/chat.service';
 import { Subscription } from 'rxjs';
 import { PickerModule } from '@ctrl/ngx-emoji-mart';
-import { format, isToday, isYesterday, isThisWeek, differenceInCalendarDays } from 'date-fns';
-import { SignalingService } from '../../services/signaling.service';
+import { VideosignalingService } from '../../services/videosignaling.service';
+import { AudiosignalingService } from '../../services/audiosignaling.service';
+import { doc } from 'firebase/firestore';
 
 @Component({
   selector: 'app-chat',
@@ -36,13 +37,22 @@ export class ChatComponent {
   touchEndX: number = 0;
   mouseStartX: number = 0;
   mouseSwiped: boolean = false;
+  peer!: RTCPeerConnection;
+  remoteStream = new MediaStream();
+  localStream!: MediaStream;
+  private subscriptions: Subscription[] = [];
+  roomId: string = '';
+
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private chatService: ChatService,
     private userService: UserService,
-    private signaling: SignalingService,) { }
+    private videoSignal: VideosignalingService,
+    private audioSignal: AudiosignalingService,
+
+  ) { }
 
   @ViewChild('messageList') messageList!: ElementRef;
 
@@ -121,9 +131,9 @@ export class ChatComponent {
   }
 
   ngOnDestroy(): void {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-    }
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+    if (this.peer) this.peer.close();
+    if (this.localStream) this.localStream.getTracks().forEach(track => track.stop());
   }
 
   scrollToBottom() {
@@ -203,27 +213,6 @@ export class ChatComponent {
     const date = ts.toDate ? ts.toDate() : new Date(ts);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
-
-  async sendMeetInvite() {
-    const roomId = 'room-' + Date.now();
-    const { localStream, remoteStream } = await this.signaling.createRoom(roomId);
-
-    const meetLink = `/video-call/${roomId}`;
-    const inviteMessage = `📹 Join my video call: <a href="${meetLink}">${meetLink}</a>`;
-
-    this.newMessage = inviteMessage;
-    this.sendMessage();
-
-    this.router.navigate([meetLink]);
-  }
-
-  joinVideoCall(content: string) {
-    const roomId = content.split('/video-call/')[1];
-    if (roomId) {
-      this.router.navigate(['/video-call', roomId]);
-    }
-  }
-
 
   startPress(message: any) {
     if (message.from !== this.currentUserId || message.unsent) return;
@@ -337,6 +326,69 @@ export class ChatComponent {
   onTouchEnd(msg: any) {
     this.touchStartX = 0;
     this.touchEndX = 0;
+  }
+
+  async sendMeetInvite() {
+    await this.setupPeerConnection('video');
+    const roomId = await this.videoSignal.createVideoRoom(this.peer);
+    const meetLink = `/video-call/${roomId}`;
+    this.newMessage = `📹 Join my video call: ${meetLink}`;
+    await this.sendMessage();
+    this.router.navigateByUrl(meetLink);
+  }
+
+  async sendAudioCallInvite() {
+    await this.setupPeerConnection('audio');
+    const roomId = await this.audioSignal.createAudioRoom(this.peer);
+    const meetLink = `/audio-call/${roomId}`;
+    this.newMessage = `📞 Join my audio call: ${meetLink}`;
+    await this.sendMessage();
+    this.router.navigateByUrl(meetLink);
+  }
+
+  async joinVideoCall(link: string) {
+    const roomId = link.split('/video-call/')[1];
+    await this.setupPeerConnection('video');
+    await this.videoSignal.joinVideoRoom(roomId, this.peer);
+    this.router.navigateByUrl(`/video-call/${roomId}`);
+  }
+
+  async joinAudioCall(link: string) {
+    const roomId = link.split('/audio-call/')[1];
+    await this.setupPeerConnection('audio');
+    await this.audioSignal.joinAudioRoom(roomId, this.peer);
+    this.router.navigateByUrl(`/audio-call/${roomId}`);
+  }
+
+  private async setupPeerConnection(type: 'audio' | 'video') {
+    const config = {
+      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+    };
+    this.peer = new RTCPeerConnection(config);
+
+    if (type === 'video') {
+      this.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    } else {
+      this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    }
+
+    this.localStream.getTracks().forEach(track => {
+      this.peer.addTrack(track, this.localStream);
+    });
+
+    this.peer.ontrack = (event) => {
+      event.streams[0].getTracks().forEach(track => {
+        this.remoteStream.addTrack(track);
+      });
+    };
+
+    this.peer.onicecandidate = async (event) => {
+      if (event.candidate && this.roomId) {
+        const role = this.peer.remoteDescription ? 'callee' : 'caller';
+        const signalingService = type === 'video' ? this.videoSignal : this.audioSignal;
+        await signalingService.addIceCandidate(this.roomId, role, event.candidate.toJSON());
+      }
+    };
   }
 
 }
