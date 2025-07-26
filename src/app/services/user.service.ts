@@ -69,7 +69,10 @@ export class UserService {
     );
   }
 
-
+  updateUserDetails(userId: string, updates: Partial<any>) {
+    const userDoc = doc(this.firestore, `users/${userId}`);
+    return updateDoc(userDoc, updates);
+  }
 
   getUserById(id: string): Observable<any> {
     const userDoc = doc(this.firestore, `users/${id}`);

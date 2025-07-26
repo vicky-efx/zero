@@ -1,13 +1,25 @@
+// Color Palette
+$color-white: #ffffff;
+$color-black: #242424;
+$color-teal-light: #5c7c89;
+$color-teal-dark: #1f4959;
+$color-navy: #011425;
+
+// Optional grayscale
+$color-gray: #666;
+$color-light-gray: #e0e0e0;
+
+
 .page-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #ff9a9e, #fad0c4, #fad0c4);
-  color: #333;
+  background: linear-gradient(135deg, $color-teal-light, $color-light-gray, $color-white);
+  color: $color-black;
   display: flex;
   flex-direction: column;
 
   .header {
-    background: linear-gradient(135deg, #2e003e, #4b003f, #6a004c);
-    color: #fff;
+    background: linear-gradient(135deg, $color-navy, $color-teal-dark, $color-teal-light);
+    color: $color-white;
     padding: 15px 20px;
     margin-bottom: 20px;
     display: flex;
@@ -20,7 +32,7 @@
       height: 44px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid #fff;
+      border: 2px solid $color-white;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
       cursor: pointer;
       transition: transform 0.2s, box-shadow 0.3s;
@@ -36,12 +48,12 @@
     display: flex;
     align-items: center;
     padding: 10px 15px;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid $color-light-gray;
     cursor: pointer;
-    background: #f9f9f9;
+    background: $color-white;
 
     &:hover {
-      background: #f9f9f9;
+      background: $color-light-gray;
     }
 
     .chat-left {
@@ -67,7 +79,7 @@
           width: 10px;
           height: 10px;
           background-color: #4caf50;
-          border: 2px solid #fff;
+          border: 2px solid $color-white;
           border-radius: 50%;
         }
       }
@@ -103,7 +115,7 @@
       .last-message {
         font-size: 14px;
         font-weight: 400;
-        color: #333;
+        color: $color-black;
       }
     }
 
@@ -114,12 +126,12 @@
 
       .chat-time {
         font-size: 12px;
-        color: #666;
+        color: $color-gray;
       }
 
       .unread-badge {
         background-color: #ff3b30;
-        color: #fff;
+        color: $color-white;
         font-size: 12px;
         font-weight: bold;
         padding: 4px 8px;
@@ -131,7 +143,6 @@
       }
     }
   }
-
 
   .modal-overlay {
     position: fixed;
@@ -174,13 +185,15 @@
 
     .chat-left {
       flex: 2;
+
       .chat-info {
-        max-width: 120px; // or auto depending on your design
+        max-width: 120px;
       }
     }
 
     .chat-center {
       flex: 1.5;
+
       .last-message {
         font-size: 13px;
       }
@@ -188,6 +201,7 @@
 
     .chat-right {
       flex: 0.5;
+
       .chat-time {
         font-size: 11px;
       }

@@ -1,29 +1,90 @@
-<div class="page-container" *ngIf="user">
-  <div class="back-arrow" (click)="goBack()">←</div>
-
+<div class="profile-container">
   <div class="profile-header">
-    <!-- Clickable image -->
-    <label class="image-label">
-      <img [src]="user.image ? user.image : 'https://i.pravatar.cc/120?u=' + user.id" alt="Profile" />
-      <input type="file" (change)="onFileSelected($event)" hidden />
-    </label>
-    <h2>{{ user.name }}</h2>
+
+    <div class="back-arrow" (click)="goBack()">
+      &#8592;
+    </div>
+    <div class="profile-pic-wrapper">
+      <img [src]="user?.image || 'https://i.pravatar.cc/150?u=' + user?.id" alt="Profile" class="profile-pic" />
+    </div>
+
+    <div class="profile-info">
+      <h2>{{ user?.name }}</h2>
+      <p class="bio">{{ user?.bio || "Love is in the air 💖" }}</p>
+
+      <div class="buttons">
+        <button class="edit-btn" (click)="editProfile()">Edit Profile</button>
+        <button class="logout-btn" (click)="confirmLogout()">Logout</button>
+      </div>
+    </div>
   </div>
 
-  <div class="profile-content">
-    <div class="section">
-      <h3>About</h3>
-      <p>Passionate developer, loves building creative apps and solving problems.</p>
+  <!-- Logout Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showLogoutConfirm">
+    <div class="modal">
+      <h3>Confirm Logout</h3>
+      <p>Are you sure you want to logout?</p>
+      <div class="modal-actions">
+        <button (click)="logout()">Yes</button>
+        <button class="cancel" (click)="cancelLogout()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Full screen profile details -->
+  <div class="profile-details">
+    <div class="detail-row">
+      <label>Email:</label>
+      <span>{{ user?.email }}</span>
     </div>
 
-    <div class="section">
-      <h3>Contact</h3>
-      <p><strong>Email:</strong> {{ user.email }}</p>
-      <p><strong>Phone:</strong> {{ user.phoneNumber }}</p>
-      <p><strong>Age:</strong> {{ user.age }}</p>
+    <div class="detail-row">
+      <label>Phone:</label>
+      <span>{{ user?.phoneNumber }}</span>
     </div>
 
-    <!-- Logout button -->
-    <button class="logout-btn" (click)="logout()">Logout</button>
+    <div class="detail-row">
+      <label>Age:</label>
+      <span>{{ user?.age }}</span>
+    </div>
+
+    <div class="detail-row">
+      <label>Status:</label>
+      <span>{{ user?.status }}</span>
+    </div>
+
+    <div class="detail-row">
+      <label>Last Seen:</label>
+      <span>{{ user?.lastSeen | date:'medium' }}</span>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" *ngIf="editing">
+    <div class="modal">
+      <h3>Edit Profile</h3>
+
+      <label>Name:
+        <input [(ngModel)]="editableUser.name" />
+      </label>
+
+      <label>Age:
+        <input type="number" [(ngModel)]="editableUser.age" />
+      </label>
+
+      <label>Phone Number:
+        <input type="tel" [(ngModel)]="editableUser.phoneNumber" />
+      </label>
+
+      <label>Bio:
+        <input [(ngModel)]="editableUser.bio" />
+      </label>
+
+      <div class="modal-actions">
+        <button (click)="saveEdits()">Save</button>
+        <button class="cancel" (click)="cancelEdits()">Cancel</button>
+      </div>
+    </div>
   </div>
 </div>
