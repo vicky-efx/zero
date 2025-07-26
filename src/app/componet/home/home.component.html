@@ -1,0 +1,47 @@
+<div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+        <h2 class="logo">EchoMate</h2>
+        <!-- Filled SVG -->
+        <svg fill="currentColor" height="40" width="40" viewBox="0 0 24 24"
+         (click)="goto()">
+            <title>Notifications</title>
+            <path
+                d="M12 2a2 2 0 00-2 2v.338a6.002 6.002 0 00-4 5.662v3.17l-.894 1.789A1 1 0 006 17h12a1 1 0 00.894-1.484L18 13.17V10a6.002 6.002 0 00-4-5.662V4a2 2 0 00-2-2zM12 22a3 3 0 003-3h-6a3 3 0 003 3z" />
+        </svg>
+    </header>
+
+    <!-- Feed -->
+    <div class="feed">
+        <div class="post-card" *ngFor="let post of posts">
+            <div class="post-header">
+                <img class="user-avatar" [src]="post.avatar" />
+                <span class="username">{{ post.username }}</span>
+            </div>
+            <img class="post-image" [src]="post.imageUrl" />
+            <div class="post-actions">
+                <div (click)="toggleLike(post)">
+                    <svg *ngIf="post.liked" fill="currentColor" height="24" width="24" viewBox="0 0 24 24">
+                        <title>Liked</title>
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 
+               2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09 
+               C13.09 3.81 14.76 3 16.5 3 
+               19.58 3 22 5.42 22 8.5 
+               c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                    </svg>
+                    <svg *ngIf="!post.liked" fill="none" stroke="currentColor" stroke-width="2" height="24" width="24"
+                        viewBox="0 0 24 24">
+                        <title>Like</title>
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 
+               2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09 
+               C13.09 3.81 14.76 3 16.5 3 
+               19.58 3 22 5.42 22 8.5 
+               c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                    </svg>
+                </div>
+            </div>
+
+            <p class="caption"><strong>{{ post.username }}:</strong> {{ post.caption }}</p>
+        </div>
+    </div>
+</div>

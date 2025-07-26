@@ -23,7 +23,7 @@ $color-light-gray: #e0e0e0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(to right, #ffe0e6, $color-light-gray);
+    background: linear-gradient(to right, #ffe0e6, $color-teal-dark);
     padding: 12px 16px;
     border-bottom: 1px solid $color-light-gray;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
@@ -102,7 +102,7 @@ $color-light-gray: #e0e0e0;
     .date-header {
         text-align: center;
         font-size: 12px;
-        color: #999;
+        color: #242424;
         margin-bottom: 10px;
     }
 

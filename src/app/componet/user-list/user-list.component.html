@@ -1,14 +1,10 @@
 <div class="page-container">
-  <div class="header">
-    <img src="zerochat_logo.png" />
-    <div class="profile" (click)="goToProfile()">
-      <img *ngIf="user?.image; else defaultAvatar" [src]="user.image" alt="Profile" />
-      <ng-template #defaultAvatar>
-        <img src="https://i.pravatar.cc/40" alt="Profile" />
-      </ng-template>
-    </div>
+  <!-- Title -->
+  <div class="page-title">
+    <h2>Users List Page</h2>
   </div>
 
+  <!-- Users List -->
   <div *ngIf="otherUsers.length > 0; else noUsers">
     <div *ngFor="let u of otherUsers" class="chat-item" (click)="openChat(u.id)">
 
@@ -27,7 +23,7 @@
         </div>
       </div>
 
-      <!-- CENTER: Last message + Unread count -->
+      <!-- CENTER: Last message -->
       <div class="chat-center">
         <div class="last-message">{{ u.lastMessage || 'No messages yet' }}</div>
       </div>
@@ -39,11 +35,10 @@
           {{ u.unreadCount }}
         </div>
       </div>
-
-
     </div>
   </div>
 
+  <!-- No Users Template -->
   <ng-template #noUsers>
     <p>No users found.</p>
   </ng-template>

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { FormsModule } from '@angular/forms';
@@ -11,6 +11,8 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './profile.component.scss'
 })
 export class ProfileComponent {
+  @ViewChild('fileInput') fileInput!: ElementRef;
+
   user: any;
   editableUser: any = {};
   editing = false;
@@ -42,9 +44,6 @@ export class ProfileComponent {
   }
 
   logout() {
-    const confirmLogout = confirm("Are you sure you want to logout?");
-    if (!confirmLogout) return;
-
     if (this.user && this.user.id) {
       this.userService.updateUserStatus(this.user.id, 'offline').then(() => {
         sessionStorage.removeItem("userId");
@@ -66,10 +65,8 @@ export class ProfileComponent {
     this.showLogoutConfirm = false;
   }
 
-
-
-  goBack() {
-    this.router.navigate(['/user-list']);
+  triggerFileInput() {
+    this.fileInput.nativeElement.click();
   }
 
   onFileSelected(event: any) {

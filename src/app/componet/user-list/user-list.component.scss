@@ -17,32 +17,18 @@ $color-light-gray: #e0e0e0;
   display: flex;
   flex-direction: column;
 
-  .header {
-    background: linear-gradient(135deg, $color-navy, $color-teal-dark, $color-teal-light);
+  .page-title {
+    text-align: start;
+    background-color: $color-navy;
     color: $color-white;
-    padding: 15px 20px;
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-
-    .profile img {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid $color-white;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.3s;
-
-      &:hover {
-        transform: scale(1.1);
-        box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
-      }
-    }
+    font-size: 1.0rem;
+    font-weight: bold;
+    border-bottom: 1px solid $color-teal-dark;
+    padding-left: 15px; 
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
   }
+
 
   .chat-item {
     display: flex;

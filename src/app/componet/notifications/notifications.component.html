@@ -1,0 +1,24 @@
+<div class="notification-page">
+    <div class="header">
+        <span class="back-button" (click)="goBack()">←</span>
+        Notifications
+    </div>
+
+    <div class="notification-list">
+        <div class="notification-card" *ngFor="let note of notifications">
+            <img [src]="note.avatar" alt="Avatar" class="avatar" />
+
+            <div class="message-content">
+                <div class="message">
+                    <strong>{{ note.username }}</strong> {{ note.message }}
+                </div>
+                <div class="time">{{ note.time }}</div>
+            </div>
+
+            <svg class="action-icon" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                <path fill="currentColor"
+                    d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zM18 16v-5c0-2.9-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5S10.5 3.17 10.5 4v.68C7.64 5.36 6 8.1 6 11v5l-2 2v1h16v-1l-2-2z" />
+            </svg>
+        </div>
+    </div>
+</div>

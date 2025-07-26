@@ -21,7 +21,7 @@ export class LoginComponent {
   ngOnInit() {
     const userId = this.storageService.getSessionItem("userId");
     if (userId) {
-      this.router.navigate(['/user-list'], { replaceUrl: true });
+      this.router.navigate(['/home'], { replaceUrl: true });
     }
   }
 
@@ -44,7 +44,7 @@ export class LoginComponent {
 
       sessionStorage.setItem("userId", user.id);
 
-      this.router.navigate(['/user-list'], { replaceUrl: true });
+      this.router.navigate(['/home'], { replaceUrl: true });
     } catch (err: any) {
       this.errorMessage = 'Invalid email or password.';
     }

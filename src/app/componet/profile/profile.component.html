@@ -1,11 +1,14 @@
-<div class="profile-container">
-  <div class="profile-header">
+<div class="page-header">
+  <h1>Profile</h1>
+</div>
 
-    <div class="back-arrow" (click)="goBack()">
-      &#8592;
-    </div>
+<div class="profile-container">
+  <!-- Profile Header -->
+  <div class="profile-header">
     <div class="profile-pic-wrapper">
-      <img [src]="user?.image || 'https://i.pravatar.cc/150?u=' + user?.id" alt="Profile" class="profile-pic" />
+      <img [src]="user?.image || 'https://i.pravatar.cc/150?u=' + user?.id" alt="Profile" class="profile-pic"
+        (click)="triggerFileInput()" />
+      <input type="file" #fileInput accept="image/*" hidden (change)="onFileSelected($event)" />
     </div>
 
     <div class="profile-info">
@@ -31,29 +34,24 @@
     </div>
   </div>
 
-
-  <!-- Full screen profile details -->
+  <!-- Profile Details -->
   <div class="profile-details">
     <div class="detail-row">
       <label>Email:</label>
       <span>{{ user?.email }}</span>
     </div>
-
     <div class="detail-row">
       <label>Phone:</label>
       <span>{{ user?.phoneNumber }}</span>
     </div>
-
     <div class="detail-row">
       <label>Age:</label>
       <span>{{ user?.age }}</span>
     </div>
-
     <div class="detail-row">
       <label>Status:</label>
       <span>{{ user?.status }}</span>
     </div>
-
     <div class="detail-row">
       <label>Last Seen:</label>
       <span>{{ user?.lastSeen | date:'medium' }}</span>

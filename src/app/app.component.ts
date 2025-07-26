@@ -1,11 +1,12 @@
 import { Component, HostListener, Inject, PLATFORM_ID } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { UserService } from './services/user.service';
-import { isPlatformBrowser } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, CommonModule, FormsModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -13,6 +14,7 @@ export class AppComponent {
   title = 'ZeroChat';
   private userId: string | null = null;
   private offlineTimeout: any;
+  currentTab: string = 'home';
 
   constructor(
     private userService: UserService,
@@ -75,4 +77,36 @@ export class AppComponent {
       this.userService.updateUserStatus(this.userId, 'offline');
     }
   };
+
+  changeTab(tab: string) {
+    if (tab === 'create') {
+      document.getElementById('fileInput')?.click();
+      return; // do not change currentTab
+    }
+
+    this.currentTab = tab;
+
+    switch (tab) {
+      case 'home':
+        this.router.navigate(['/home']);
+        break;
+      case 'profile':
+        this.router.navigate(['/profile']);
+        break;
+      case 'users':
+        this.router.navigate(['/user-list']);
+        break;
+    }
+  }
+
+
+  handleGalleryUpload(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) {
+      console.log('Selected file:', file.name);
+      // TODO: Add your file upload logic here
+    }
+  }
+
 }

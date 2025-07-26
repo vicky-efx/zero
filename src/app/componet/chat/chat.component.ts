@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { UserService } from '../../services/user.service';
@@ -8,7 +8,7 @@ import { Subscription } from 'rxjs';
 import { PickerModule } from '@ctrl/ngx-emoji-mart';
 import { VideosignalingService } from '../../services/videosignaling.service';
 import { AudiosignalingService } from '../../services/audiosignaling.service';
-import { doc } from 'firebase/firestore';
+import { Location } from '@angular/common'; 
 
 @Component({
   selector: 'app-chat',
@@ -51,7 +51,7 @@ export class ChatComponent {
     private userService: UserService,
     private videoSignal: VideosignalingService,
     private audioSignal: AudiosignalingService,
-
+    private location: Location
   ) { }
 
   @ViewChild('messageList') messageList!: ElementRef;
@@ -177,9 +177,8 @@ export class ChatComponent {
       });
   }
 
-
-  goBack(): void {
-    this.router.navigate(['/user-list']);
+  goBack() {
+    this.location.back(); // ✅ Now it works
   }
 
   formatLastSeen(lastSeen: number | undefined): string {

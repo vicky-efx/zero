@@ -1,13 +1,21 @@
-/* You can add global styles to this file, and also import other style files */
-
 $color-white: #ffffff;
 $color-black: #242424;
 $color-teal-light: #5c7c89;
 $color-teal-dark: #1f4959;
 $color-navy: #011425;
-
 $color-gray: #666;
 $color-light-gray: #e0e0e0;
+
+.page-header {
+  background-color: $color-navy;
+  color: $color-white;
+  padding: 1rem;
+  font-size: 1.0rem;
+  font-weight: bold;
+  border-bottom: 1px solid $color-teal-dark;
+  text-align: start;
+  margin-bottom: 1rem;
+}
 
 .profile-container {
   padding: 2rem;
@@ -19,25 +27,11 @@ $color-light-gray: #e0e0e0;
     display: flex;
     align-items: flex-start;
     gap: 1.5rem;
-    position: relative;
     padding: 1rem 0;
-
-    .back-arrow {
-      position: absolute;
-      top: 0;
-      left: 0;
-      font-size: 50px;
-      cursor: pointer;
-      color: $color-black;
-      transition: color 0.2s;
-
-      &:hover {
-        color: $color-teal-dark;
-      }
-    }
 
     .profile-pic-wrapper {
       margin-left: 2.5rem;
+      cursor: pointer;
 
       .profile-pic {
         width: 150px;

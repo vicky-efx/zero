@@ -1,0 +1,87 @@
+// _colors.scss
+$color-white: #ffffff;
+$color-black: #242424;
+$color-teal-light: #5c7c89;
+$color-teal-dark: #1f4959;
+$color-navy: #011425;
+
+$color-gray: #666;
+$color-light-gray: #e0e0e0;
+
+.notification-page {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: $color-navy;
+    color: $color-white;
+
+    .header {
+        background-color: $color-teal-dark;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        font-size: 1.3rem;
+        font-weight: bold;
+        border-bottom: 1px solid $color-teal-light;
+
+        .back-button {
+            margin-right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: $color-white;
+        }
+
+        .title {
+            flex: 1;
+            text-align: center;
+            color: $color-white;
+        }
+    }
+
+    .notification-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        background-color: $color-black;
+
+        .notification-card {
+            display: flex;
+            align-items: center;
+            background-color: $color-teal-light;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+
+            .avatar {
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                object-fit: cover;
+                margin-right: 1rem;
+                border: 2px solid $color-white;
+            }
+
+            .message-content {
+                flex: 1;
+
+                .message {
+                    font-size: 0.95rem;
+                    color: $color-white;
+                }
+
+                .time {
+                    font-size: 0.75rem;
+                    color: $color-light-gray;
+                    margin-top: 0.25rem;
+                }
+            }
+
+            .action-icon {
+                color: $color-white;
+                cursor: pointer;
+                margin-left: 0.5rem;
+            }
+        }
+    }
+}
