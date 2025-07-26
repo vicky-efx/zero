@@ -1,5 +1,5 @@
 import { Component, HostListener, Inject, PLATFORM_ID } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { UserService } from './services/user.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -15,12 +15,28 @@ export class AppComponent {
   private userId: string | null = null;
   private offlineTimeout: any;
   currentTab: string = 'home';
+  showFooter = true;
+
 
   constructor(
     private userService: UserService,
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) { }
+  ) {
+    const hideFooterRoutes = ['/notification', '/settings'];
+    const hideFooterStartsWith = ['/chat/', '/video-call/'];
+
+    this.router.events.subscribe(event => {
+      if (event instanceof NavigationEnd) {
+        const url = event.urlAfterRedirects;
+
+        this.showFooter =
+          !hideFooterRoutes.includes(url) &&
+          !hideFooterStartsWith.some(prefix => url.startsWith(prefix));
+      }
+    });
+
+  }
 
   ngOnInit(): void {
     if (!isPlatformBrowser(this.platformId)) return;
@@ -78,34 +94,16 @@ export class AppComponent {
     }
   };
 
-  changeTab(tab: string) {
-    if (tab === 'create') {
-      document.getElementById('fileInput')?.click();
-      return; // do not change currentTab
-    }
-
-    this.currentTab = tab;
-
-    switch (tab) {
-      case 'home':
-        this.router.navigate(['/home']);
-        break;
-      case 'profile':
-        this.router.navigate(['/profile']);
-        break;
-      case 'users':
-        this.router.navigate(['/user-list']);
-        break;
-    }
+  changeTab(tabName: string) {
+    this.currentTab = tabName;
+    this.router.navigate([`/${tabName}`]);
   }
 
 
-  handleGalleryUpload(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
+  handleGalleryUpload(event: any) {
+    const file = event.target.files[0];
     if (file) {
-      console.log('Selected file:', file.name);
-      // TODO: Add your file upload logic here
+      console.log('File selected:', file);
     }
   }
 

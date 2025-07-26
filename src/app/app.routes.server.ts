@@ -14,6 +14,14 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Prerender
   },
   {
+    path: 'home',
+    renderMode: RenderMode.Prerender
+  },
+  {
+    path: 'notification',
+    renderMode: RenderMode.Prerender
+  },
+  {
     path: 'user-list',
     renderMode: RenderMode.Prerender
   },
@@ -30,7 +38,11 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Server
   },
   {
+    path: 'audio-call/:roomId',
+    renderMode: RenderMode.Server
+  },
+  {
     path: '**',
-    renderMode: RenderMode.Server 
+    renderMode: RenderMode.Server
   }
 ];
