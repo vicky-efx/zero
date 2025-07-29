@@ -8,4 +8,6 @@ export const environment = {
         appId: "1:775389525323:web:cb02d173d3fe7a05ebe4ce",
         measurementId: "G-B2K3FXXHJF"
     },
+    vapidKey: 'BBcKGuY7I6sN4tb4AZ-nEo1ZqI2p-lANZQqvSWyMM8J_4afj1w1CVSmY7H6bqFaWNWr0LxBZoqjczb-5mO0Ia5Y'
+
 };

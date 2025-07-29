@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { CommonModule } from '@angular/common';
 import { StorageService } from '../../services/storage.service';
+import { PushNotificationService } from '../../services/push-notification.service';
 
 @Component({
   selector: 'app-login',
@@ -16,7 +17,7 @@ export class LoginComponent {
   password = '';
   errorMessage = '';
 
-  constructor(private storageService: StorageService, private router: Router, private userService: UserService) { }
+  constructor(private storageService: StorageService, private router: Router, private userService: UserService, public push: PushNotificationService) { }
 
   ngOnInit() {
     const userId = this.storageService.getSessionItem("userId");
@@ -43,6 +44,8 @@ export class LoginComponent {
       }
 
       sessionStorage.setItem("userId", user.id);
+
+      this.push.requestPermission(user.id);
 
       this.router.navigate(['/home'], { replaceUrl: true });
     } catch (err: any) {

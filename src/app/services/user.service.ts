@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Firestore, doc, docData, collection, collectionData, addDoc, query, where, getDocs, updateDoc, orderBy, limit } from '@angular/fire/firestore';
+import { Firestore, doc, docData, collection, collectionData, addDoc, query, where, getDocs, updateDoc, orderBy, limit, setDoc, getDoc } from '@angular/fire/firestore';
 import { BehaviorSubject, Observable, from, map, switchMap, throwError } from 'rxjs';
 import { ChatService } from './chat.service';
 
@@ -140,7 +140,6 @@ export class UserService {
     let lastTime = '';
     let unreadCount = 0;
 
-    // 1. Get last message
     const lastMsgQuery = query(messagesCollection, orderBy('timestamp', 'desc'), limit(1));
     const lastMsgSnapshot = await getDocs(lastMsgQuery);
 
@@ -161,13 +160,43 @@ export class UserService {
 
       lastTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
-
-    // 2. Get unread count
     const unreadQuery = query(messagesCollection, where('to', '==', currentUserId), where('read', '==', false));
     const unreadSnapshot = await getDocs(unreadQuery);
     unreadCount = unreadSnapshot.size;
 
     return { lastMessage, lastTime, unreadCount };
+  }
+
+  async sendPushNotification(toUserId: string, title: string, body: string) {
+    const userRef = doc(this.firestore, `users/${toUserId}`);
+    const userSnap = await getDoc(userRef);
+    const token = userSnap.data()?.['fcmToken'];
+
+    if (!token) {
+      console.log("❌ No FCM token found for user:", toUserId);
+      return;
+    }
+
+    const payload = {
+      notification: {
+        title,
+        body,
+      },
+      to: token,
+    };
+
+    await fetch('https://fcm.googleapis.com/fcm/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'key=YOUR_SERVER_KEY_HERE' // 🔐 Replace with Firebase server key
+      },
+      body: JSON.stringify(payload),
+    }).then(res => {
+      console.log('✅ Notification sent');
+    }).catch(err => {
+      console.error('❌ Notification failed:', err);
+    });
   }
 
 

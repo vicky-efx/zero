@@ -3,6 +3,10 @@ import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { UserService } from './services/user.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { PushNotificationService } from './services/push-notification.service';
+import { onMessage } from 'firebase/messaging';
+import { MatSnackBar } from '@angular/material/snack-bar'; 
+
 
 @Component({
   selector: 'app-root',
@@ -21,7 +25,9 @@ export class AppComponent {
   constructor(
     private userService: UserService,
     private router: Router,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private snackBar: MatSnackBar,
+    private push: PushNotificationService
   ) {
     const hideFooterRoutes = ['/notification', '/settings'];
     const hideFooterStartsWith = ['/chat/', '/video-call/'];
@@ -55,6 +61,22 @@ export class AppComponent {
     // Detect tab visibility change (optional for advanced control)
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
     window.addEventListener('offline', this.setOffline);
+    this.listenForMessages();
+  }
+
+  listenForMessages(): void {
+    onMessage(this.push['messaging'], (payload) => {
+      console.log('📩 Foreground message received:', payload);
+
+      const title = payload.notification?.title || 'New Message';
+      const body = payload.notification?.body || '';
+
+      this.snackBar.open(`${title}: ${body}`, 'Close', {
+        duration: 4000,
+        verticalPosition: 'top',  // Optional: 'top' or 'bottom'
+        horizontalPosition: 'right',  // Optional: 'start', 'center', 'end', 'left', 'right'
+      });
+    });
   }
 
   ngOnDestroy(): void {

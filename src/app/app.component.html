@@ -28,15 +28,15 @@
         </svg>
     </div>
 
-    <div class="footer-icon" [class.active]="currentTab === 'users'" (click)="changeTab('user-list')">
-        <svg *ngIf="currentTab === 'users'" fill="currentColor" height="24" width="24" viewBox="0 0 24 24">
+    <div class="footer-icon" [class.active]="currentTab === 'user-list'" (click)="changeTab('user-list')">
+        <svg *ngIf="currentTab === 'user-list'" fill="currentColor" height="24" width="24" viewBox="0 0 24 24">
             <title>Users</title>
             <path
                 d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2m16-11a4 4 0 1 1-8 0 4 4 0 0 1 8 0Zm6 11v-2a4 4 0 0 0-3-3.87m-3-6.13a4 4 0 0 1 4 4"
                 stroke="currentColor" stroke-width="2" fill="currentColor" stroke-linecap="round"
                 stroke-linejoin="round" />
         </svg>
-        <svg *ngIf="currentTab !== 'users'" fill="none" stroke="currentColor" height="24" width="24"
+        <svg *ngIf="currentTab !== 'user-list'" fill="none" stroke="currentColor" height="24" width="24"
             viewBox="0 0 24 24">
             <title>Users</title>
             <path

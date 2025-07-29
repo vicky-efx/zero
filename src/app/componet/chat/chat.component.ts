@@ -8,7 +8,7 @@ import { Subscription } from 'rxjs';
 import { PickerModule } from '@ctrl/ngx-emoji-mart';
 import { VideosignalingService } from '../../services/videosignaling.service';
 import { AudiosignalingService } from '../../services/audiosignaling.service';
-import { Location } from '@angular/common'; 
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-chat',
@@ -61,27 +61,35 @@ export class ChatComponent {
     this.selectedUserId = this.route.snapshot.paramMap.get('id') || '';
     this.chatId = this.chatService.generateChatId(this.currentUserId, this.selectedUserId);
 
-    this.messages = []; // Initialize before loading messages
+    this.messages = [];
 
     this.userService.getUserById(this.selectedUserId).subscribe(user => {
-      if (user) {
-        this.userName = user.name || 'Unknown';
-
-        if (user.status === 'online') {
-          this.userStatusText = 'online';
-          this.statusColor = '#138f53';
-        } else {
-          this.userStatusText = this.formatLastSeen(user.lastSeen);
-          this.statusColor = 'black';
-        }
-      } else {
-        this.userName = 'Unknown';
-        this.userStatusText = 'offline';
-        this.statusColor = 'black';
-      }
+      this.setUserDetails(user);
     });
 
     this.loadMessages();
+  }
+
+  private setUserDetails(user: any): void {
+    if (user) {
+      this.userName = user.name || 'Unknown';
+
+      const statusDetails = this.getStatusDetails(user);
+      this.userStatusText = statusDetails.text;
+      this.statusColor = statusDetails.color;
+    } else {
+      this.userName = 'Unknown';
+      this.userStatusText = 'offline';
+      this.statusColor = 'black';
+    }
+  }
+
+  private getStatusDetails(user: any): { text: string; color: string } {
+    if (user.status === 'online') {
+      return { text: 'online', color: '#138f53' };
+    } else {
+      return { text: this.formatLastSeen(user.lastSeen), color: 'black' };
+    }
   }
 
   loadMessages() {
@@ -170,6 +178,13 @@ export class ChatComponent {
       .then(() => {
         this.newMessage = '';
         this.replyToMessage = null;
+
+        // 🔔 Push Notification Trigger
+        this.userService.sendPushNotification(
+          this.selectedUserId,
+          isMeetInvite ? '📹 Video Call Invite' : 'New Message',
+          trimmed
+        );
       })
       .catch(err => {
         console.error(err);

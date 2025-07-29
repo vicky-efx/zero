@@ -1,6 +1,14 @@
 import { bootstrapApplication } from '@angular/platform-browser';
-import { appConfig } from './app/app.config';
 import { AppComponent } from './app/app.component';
+import { appConfig } from './app/app.config';
 
 bootstrapApplication(AppComponent, appConfig)
-  .catch((err) => console.error(err));
+  .then(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker
+        .register('firebase-messaging-sw.js')
+        .then(reg => console.log('✅ Service Worker registered:', reg))
+        .catch(err => console.error('❌ Service Worker registration failed:', err));
+    }
+  })
+  .catch(err => console.error(err));

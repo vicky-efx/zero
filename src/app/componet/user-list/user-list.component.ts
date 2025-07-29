@@ -27,26 +27,12 @@ export class UserListComponent {
       return;
     }
 
-    this.loadCurrentUser(userId);
     this.loadOtherUsers(userId);
   }
 
   private handleMissingUser(): void {
     console.error('No user ID found in local storage!');
     this.router.navigate(['/login']);
-  }
-
-  private loadCurrentUser(userId: string): void {
-    this.userService.userData$.subscribe((data) => {
-      this.user = data;
-    });
-
-    if (!this.user) {
-      this.userService.getUserById(userId).subscribe((data) => {
-        this.user = data;
-        this.userService.setUserData(data);
-      });
-    }
   }
 
   private loadOtherUsers(userId: string): void {

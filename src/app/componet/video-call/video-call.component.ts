@@ -78,7 +78,7 @@ export class VideoCallComponent implements OnInit, OnDestroy {
   hangUp() {
     if (this.peer) this.peer.close();
     if (this.localStream) this.localStream.getTracks().forEach(t => t.stop());
-    this.router.navigate(['/chat']); // Go back to chat page or homepage
+    this.router.navigate(['/user-list']); // Go back to chat page or homepage
   }
 
   ngOnDestroy(): void {
